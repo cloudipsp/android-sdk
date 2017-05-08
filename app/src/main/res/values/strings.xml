@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">cloudipsp.com demo</string>
+    <string name="lbl_amount">Amount:</string>
+    <string name="lbl_ccy">Currency:</string>
+    <string name="lbl_email">Email:</string>
+    <string name="lbl_description">Description:</string>
+    <string name="btn_pay">Pay</string>
+    <string name="e_invalid_amount">Invalid amount</string>
+    <string name="e_invalid_email">Invalid email</string>
+    <string name="e_invalid_description">Enter description</string>
+</resources>

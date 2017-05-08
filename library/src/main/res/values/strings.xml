@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lbl_card_number">Card number:</string>
+    <string name="lbl_expd">Expiry:</string>
+    <string name="hint_mm">MM</string>
+    <string name="hint_yy">YY</string>
+    <string name="lbl_cvv">CVV:</string>
+    <string name="e_invalid_card_number">Invalid card number</string>
+    <string name="e_invalid_yy">Invalid year</string>
+    <string name="e_invalid_mm">Invalid month</string>
+    <string name="e_invalid_date">Invalid date</string>
+    <string name="e_invalid_cvv">Invalid cvv</string>
+</resources>

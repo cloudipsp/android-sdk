@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lbl_card_number">Номер карты:</string>
+    <string name="lbl_expd">Срок действия:</string>
+    <string name="hint_mm">ММ</string>
+    <string name="hint_yy">ГГ</string>
+    <string name="lbl_cvv">CVV:</string>
+    <string name="e_invalid_card_number">Неверный номер карты</string>
+    <string name="e_invalid_yy">Неверный год</string>
+    <string name="e_invalid_mm">Неверный месяц</string>
+    <string name="e_invalid_date">Неверный срок действия</string>
+    <string name="e_invalid_cvv">Неверный cvv</string>
+</resources>

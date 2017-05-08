@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="CloudipspTheme" parent="android:Theme.Holo.Light.DarkActionBar">
+        <item name="android:editTextStyle">@style/CloudipspEditText</item>
+    </style>
+
+    <style name="CloudipspEditText" parent="android:style/Widget.Holo.EditText">
+        <!--<item name="android:background">#ffff00</item>-->
+    </style>
+</resources>
