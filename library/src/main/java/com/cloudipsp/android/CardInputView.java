@@ -1,18 +1,19 @@
 package com.cloudipsp.android;
 
 import android.content.Context;
-import android.os.Parcelable;
 import android.util.AttributeSet;
-import android.util.SparseArray;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 /**
  * Created by vberegovoy on 22.12.15.
  */
-public class CardInputView extends FrameLayout {
+public final class CardInputView extends FrameLayout {
     private static final ConfirmationErrorHandler DEFAULT_CONFIRMATION_ERROR_HANDLER = new ConfirmationErrorHandler() {
         @Override
         public void onCardInputErrorClear(CardInputView view, EditText editText) {
@@ -27,11 +28,8 @@ public class CardInputView extends FrameLayout {
     };
     private static final String[] HELP_CARDS = new String[]{"4444555566661111", "4444111166665555", "4444555511116666", "4444111155556666"};
 
-    private final View view;
-    private final CardNumberEdit editCardNumber;
-    private final EditText editMm;
-    private final EditText editYy;
-    private final EditText editCvv;
+    private final CardInputLayout view;
+    private CompletionListener completionListener;
 
     private int currentHelpCard = 0;
     private boolean helpedNeeded = false;
@@ -46,58 +44,43 @@ public class CardInputView extends FrameLayout {
 
     public CardInputView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        view = LayoutInflater.from(context).inflate(R.layout.com_cloudipsp_android_card_input_view, null);
-        editCardNumber = (CardNumberEdit) view.findViewById(R.id.edit_card_number);
-        editMm = (EditText) view.findViewById(R.id.edit_mm);
-        editYy = (EditText) view.findViewById(R.id.edit_yy);
-        editCvv = (EditText) view.findViewById(R.id.edit_cvv);
-
+        view = (CardInputLayout) LayoutInflater.from(context).inflate(R.layout.com_cloudipsp_android_card_input_view, null);
         view.findViewById(R.id.btn_help_next_card).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 nextHelpCard();
             }
         });
-
         addView(view);
-        setFakeIds();
+        setCompletionListener(null);
     }
 
-    @Override
-    protected void dispatchSaveInstanceState(SparseArray<Parcelable> container) {
-        setReadIds();
-        super.dispatchSaveInstanceState(container);
-        setFakeIds();
+    public void setCompletionListener(CompletionListener listener) {
+        setCompletionListener(listener, EditorInfo.IME_ACTION_DONE);
     }
 
-    @Override
-    protected void dispatchRestoreInstanceState(SparseArray<Parcelable> container) {
-        setReadIds();
-        super.dispatchRestoreInstanceState(container);
-        setFakeIds();
-    }
+    public void setCompletionListener(final CompletionListener listener, final int lastViewImeOptions) {
+        completionListener = listener;
 
-    private void setFakeIds() {
-        editCardNumber.setId(View.NO_ID);
-        editMm.setId(View.NO_ID);
-        editYy.setId(View.NO_ID);
-        editCvv.setId(View.NO_ID);
-    }
-
-    private void setReadIds() {
-        editCardNumber.setId(R.id.edit_card_number);
-        editMm.setId(R.id.edit_mm);
-        editYy.setId(R.id.edit_yy);
-        editCvv.setId(R.id.edit_cvv);
+        view.editCvv.setImeOptions(lastViewImeOptions);
+        if (completionListener != null) {
+            view.editCvv.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    if (lastViewImeOptions == actionId) {
+                        listener.onCompleted(CardInputView.this);
+                        return true;
+                    }
+                    return false;
+                }
+            });
+        }
     }
 
     private void nextHelpCard() {
         if (helpedNeeded) {
             currentHelpCard %= HELP_CARDS.length;
-            editCardNumber.setCardNumber(HELP_CARDS[currentHelpCard++]);
-            editMm.setText("12");
-            editYy.setText("18");
-            editCvv.setText("111");
+            view.setHelpCard(HELP_CARDS[currentHelpCard++], "12", "18", "111");
         }
     }
 
@@ -113,39 +96,24 @@ public class CardInputView extends FrameLayout {
         return confirm(DEFAULT_CONFIRMATION_ERROR_HANDLER);
     }
 
-    public Card confirm(ConfirmationErrorHandler handler) {
-        handler.onCardInputErrorClear(this, editCardNumber);
-        handler.onCardInputErrorClear(this, editMm);
-        handler.onCardInputErrorClear(this, editYy);
-        handler.onCardInputErrorClear(this, editCvv);
+    public Card confirm(final ConfirmationErrorHandler handler) {
+        return view.confirm(new CardInputLayout.ConfirmationErrorHandler() {
+            @Override
+            public void onCardInputErrorClear(CardInputLayout view, EditText editText) {
+                handler.onCardInputErrorClear(CardInputView.this, editText);
+            }
 
-        final Card card = new Card
-                (
-                        editCardNumber.getCardNumber(),
-                        editMm.getText().toString(),
-                        editYy.getText().toString(),
-                        editCvv.getText().toString()
-                );
-
-        if (!card.isValidCardNumber()) {
-            handler.onCardInputErrorCatched(this, editCardNumber, getContext().getString(R.string.e_invalid_card_number));
-        } else if (!card.isValidExpireMonth()) {
-            handler.onCardInputErrorCatched(this, editMm, getContext().getString(R.string.e_invalid_mm));
-        } else if (!card.isValidExpireYear()) {
-            handler.onCardInputErrorCatched(this, editYy, getContext().getString(R.string.e_invalid_yy));
-        } else if (!card.isValidExpireDate()) {
-            handler.onCardInputErrorCatched(this, editYy, getContext().getString(R.string.e_invalid_date));
-        } else if (!card.isValidCvv()) {
-            handler.onCardInputErrorCatched(this, editCvv, getContext().getString(R.string.e_invalid_cvv));
-        } else {
-            return card;
-        }
-        return null;
+            @Override
+            public void onCardInputErrorCatched(CardInputLayout view, EditText editText, String error) {
+                handler.onCardInputErrorCatched(CardInputView.this, editText, error);
+            }
+        });
     }
 
-    public interface ConfirmationErrorHandler {
-        public void onCardInputErrorClear(CardInputView view, EditText editText);
+    public interface ConfirmationErrorHandler extends BaseConfirmationErrorHandler<CardInputView> {
+    }
 
-        public void onCardInputErrorCatched(CardInputView view, EditText editText, String error);
+    public interface CompletionListener {
+        public void onCompleted(CardInputView view);
     }
 }

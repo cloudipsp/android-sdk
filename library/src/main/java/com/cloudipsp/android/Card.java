@@ -153,7 +153,11 @@ public final class Card implements Parcelable {
     }
 
     public boolean isValidCvv() {
-        return cvv != null && cvv.length() == 3;
+        if (cvv == null) {
+            return false;
+        }
+        final int length = cvv.length();
+        return length == 3 || length == 4;
     }
 
     private static boolean lunaCheck(String cardNumber) {

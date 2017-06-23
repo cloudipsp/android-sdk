@@ -87,6 +87,10 @@ public class Order implements Parcelable {
         }
     }
 
+    public Order(int amount, Currency currency, String id, String description) {
+        this(amount, currency, id, description, null);
+    }
+
     public Order(int amount, Currency currency, String id, String description, String email) {
         if (amount <= 0) {
             throw new IllegalArgumentException("Amount should be more than 0");
@@ -106,7 +110,7 @@ public class Order implements Parcelable {
         if (description.length() == 0 || description.length() > 1024) {
             throw new IllegalArgumentException("description's length should be > 0 && <= 1024");
         }
-        if (TextUtils.isEmpty(email) || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        if (!TextUtils.isEmpty(email) && !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             throw new IllegalArgumentException("email is not valid");
         }
 

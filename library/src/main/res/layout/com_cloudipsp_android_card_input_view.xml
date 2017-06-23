@@ -1,87 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.cloudipsp.android.CardInputLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
-
-    <TextView
-        android:id="@+id/btn_help_next_card"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="7dp"
-        android:text="@string/lbl_card_number" />
-
-    <com.cloudipsp.android.CardNumberEdit
-        android:id="@+id/edit_card_number"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="7dp"
-        android:imeOptions="actionNext"
-        android:inputType="number"
-        android:maxLength="19"
-        android:nextFocusDown="@+id/edit_mm"
-        android:nextFocusForward="@+id/edit_mm"
-        android:nextFocusRight="@+id/edit_mm" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="7dp"
-        android:text="@string/lbl_expd" />
+    android:layout_height="wrap_content">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/edit_mm"
+        <TextView
+            android:id="@+id/btn_help_next_card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginRight="3dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:hint="@string/hint_mm"
-            android:imeOptions="actionNext"
-            android:inputType="number"
-            android:maxLength="2"
-            android:nextFocusDown="@+id/edit_yy"
-            android:nextFocusRight="@+id/edit_yy"
-            android:nextFocusUp="@id/edit_card_number"
-            android:singleLine="true" />
+            android:layout_marginTop="7dp"
+            android:text="@string/lbl_card_number" />
 
-        <EditText
-            android:id="@+id/edit_yy"
+        <com.cloudipsp.android.CardNumberEdit
+            android:id="@+id/edit_card_number"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="3dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:hint="@string/hint_yy"
+            android:layout_marginTop="7dp"
             android:imeOptions="actionNext"
-            android:inputType="number"
-            android:maxLength="2"
-            android:nextFocusDown="@+id/edit_cvv"
-            android:nextFocusLeft="@id/edit_mm"
-            android:nextFocusUp="@id/edit_mm"
-            android:singleLine="true" />
+            android:nextFocusDown="@+id/edit_mm"
+            android:nextFocusForward="@+id/edit_mm"
+            android:nextFocusRight="@+id/edit_mm" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:text="@string/lbl_expd" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+            <com.cloudipsp.android.CardExpMmEdit
+                android:id="@+id/edit_mm"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="3dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:hint="@string/hint_mm"
+                android:imeOptions="actionNext"
+                android:nextFocusDown="@+id/edit_yy"
+                android:nextFocusRight="@+id/edit_yy"
+                android:nextFocusUp="@id/edit_card_number" />
+
+            <com.cloudipsp.android.CardExpYyEdit
+                android:id="@+id/edit_yy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="3dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:hint="@string/hint_yy"
+                android:imeOptions="actionNext"
+                android:nextFocusDown="@+id/edit_cvv"
+                android:nextFocusLeft="@id/edit_mm"
+                android:nextFocusUp="@id/edit_mm" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/lbl_cvv" />
+
+        <com.cloudipsp.android.CardCvvEdit
+            android:id="@+id/edit_cvv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:nextFocusUp="@id/edit_yy" />
     </LinearLayout>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="@string/lbl_cvv" />
-
-    <EditText
-        android:id="@+id/edit_cvv"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="7dp"
-        android:imeOptions="actionDone"
-        android:inputType="numberPassword"
-        android:maxLength="3"
-        android:nextFocusUp="@id/edit_yy" />
-
-</LinearLayout>
+</com.cloudipsp.android.CardInputLayout>
