@@ -2,8 +2,8 @@ apply plugin: 'com.android.library'
 apply from: '../maven_push.gradle'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion "22.0.1"
+    compileSdkVersion 25
+    buildToolsVersion "25.0.1"
 
     def apiHost
     if (project.hasProperty("host")) {

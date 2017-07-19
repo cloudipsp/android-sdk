@@ -12,7 +12,6 @@ import android.widget.Toast;
 
 import com.cloudipsp.android.Card;
 import com.cloudipsp.android.CardInputLayout;
-import com.cloudipsp.android.CardInputView;
 import com.cloudipsp.android.Cloudipsp;
 import com.cloudipsp.android.CloudipspWebView;
 import com.cloudipsp.android.Currency;

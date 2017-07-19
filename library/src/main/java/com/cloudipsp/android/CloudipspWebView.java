@@ -1,8 +1,12 @@
 package com.cloudipsp.android;
 
 import android.content.Context;
+import android.net.Uri;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -62,6 +66,8 @@ public class CloudipspWebView extends WebView implements CloudipspView {
 //                    Log.i(Cloudipsp.TAG, "WebUrl: " + url);
 //                }
                 if (url.startsWith(URL_START_PATTERN)) {
+                    reload();
+
                     final String jsonOfConfirmation = url.split(URL_START_PATTERN)[1];
                     confirmation.listener.onConfirmed(jsonOfConfirmation);
 
@@ -71,14 +77,63 @@ public class CloudipspWebView extends WebView implements CloudipspView {
                     return super.shouldOverrideUrlLoading(view, url);
                 }
             }
-
-            @Override
-            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-                super.onReceivedError(view, errorCode, description, failingUrl);
-            }
         });
 
 
-        loadDataWithBaseURL(confirmation.url, confirmation.htmlPageContent, confirmation.contentType, null, null);
+        if (Tls12SocketFactory.needHere()) {
+            loadProxy(confirmation);
+        } else {
+            loadDataWithBaseURL(confirmation.url, confirmation.htmlPageContent, confirmation.contentType, encoding(confirmation.contentType), null);
+        }
+    }
+
+    private static String encoding(String contentType) {
+        String[] parts = contentType.split("charset\\=");
+        if (parts.length < 2) {
+            return "UTF-8";
+        } else {
+            return parts[1];
+        }
+    }
+
+    private void loadProxy(PayConfirmation confirmation) {
+        try {
+            final Uri uri = Uri.parse(confirmation.url);
+            final String oldHost = uri.getAuthority();
+            final String newHost = "3dse.fondy.eu";
+
+            final Uri.Builder uriBuilder = uri.buildUpon()
+                    .authority(newHost)
+                    .path(uri.getPath())
+                    .appendQueryParameter("jd91mx8", oldHost);
+            final String url = uriBuilder.toString();
+            String htmlPageContent = confirmation.htmlPageContent;
+
+            final String quoted = oldHost.replace(".", "\\.");
+            htmlPageContent = htmlPageContent.replaceAll(quoted, newHost);
+
+
+            clearProxy();
+            loadDataWithBaseURL(url, htmlPageContent, confirmation.contentType, encoding(confirmation.contentType), null);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void clearProxy() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            CookieManager.getInstance().removeAllCookies(null);
+            CookieManager.getInstance().flush();
+        } else {
+            CookieSyncManager cookieSyncMngr = CookieSyncManager.createInstance(getContext());
+            cookieSyncMngr.startSync();
+            CookieManager cookieManager = CookieManager.getInstance();
+            cookieManager.removeAllCookie();
+            cookieManager.removeSessionCookie();
+            cookieSyncMngr.stopSync();
+            cookieSyncMngr.sync();
+        }
+
+        clearCache(true);
     }
 }

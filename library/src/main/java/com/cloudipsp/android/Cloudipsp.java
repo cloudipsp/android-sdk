@@ -26,8 +26,10 @@ import java.util.TreeMap;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
 
 /**
  * Created by vberegovoy on 09.11.15.
@@ -37,6 +39,7 @@ public final class Cloudipsp {
     private static final String URL_CALLBACK = "http://callback";
     private static final SimpleDateFormat DATE_AND_FORMAT = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.US);
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy", Locale.US);
+    private static final SSLSocketFactory tlsSocketFactory = Tls12SocketFactory.getInstance();
 
     static {
         DATE_AND_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -424,7 +427,11 @@ public final class Cloudipsp {
     private static String call(String url, String content, String contentType, ResponseInterceptor responseInterceptor) throws java.lang.Exception {
         final HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
         if (connection instanceof HttpsURLConnection) {
-            ((HttpsURLConnection)connection).setHostnameVerifier(new HostnameVerifier() {
+            final HttpsURLConnection secureConnection = (HttpsURLConnection) connection;
+            if (tlsSocketFactory != null) {
+                secureConnection.setSSLSocketFactory(tlsSocketFactory);
+            }
+            secureConnection.setHostnameVerifier(new HostnameVerifier() {
                 @Override
                 public boolean verify(String hostname, SSLSession session) {
                     final String peerHost = session.getPeerHost();

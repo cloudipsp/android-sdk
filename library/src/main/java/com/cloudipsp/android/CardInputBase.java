@@ -26,7 +26,11 @@ class CardInputBase extends EditText {
 
     @Override
     public void addTextChangedListener(TextWatcher watcher) {
-        throw new RuntimeException("unsupported operation");
+        if (isParentCall()) {
+            super.addTextChangedListener(watcher);
+        } else {
+            throw new RuntimeException("unsupported operation");
+        }
     }
 
     protected void setTextInternal(CharSequence text) {
@@ -66,6 +70,8 @@ class CardInputBase extends EditText {
         return className.equals(TextView.class.getName())
                 || className.equals(EditText.class.getName())
                 || className.equals("android.widget.Editor")
-                || className.startsWith("android.widget.Editor$");
+                || className.startsWith("android.widget.Editor$")
+                || className.equals("android.support.design.widget.TextInputLayout")
+        ;
     }
 }
