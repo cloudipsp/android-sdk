@@ -63,7 +63,10 @@ class CardInputBase extends EditText {
 
     private final boolean isParentCall() {
         final StackTraceElement stack[] = new Throwable().getStackTrace();
-        return isParentClass(stack[2].getClassName()) || isParentClass(stack[3].getClassName()) || isParentClass(stack[4].getClassName());
+
+        return isParentClass(stack[2].getClassName()) ||
+                isParentClass(stack[3].getClassName()) ||
+                isParentClass(stack[4].getClassName());
     }
 
     private final boolean isParentClass(String className) {
@@ -72,6 +75,7 @@ class CardInputBase extends EditText {
                 || className.equals("android.widget.Editor")
                 || className.startsWith("android.widget.Editor$")
                 || className.equals("android.support.design.widget.TextInputLayout")
-        ;
+                || className.equals("com.huawei.android.hwcontrol.HwEditor")
+                ;
     }
 }

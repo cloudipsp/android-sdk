@@ -20,5 +20,5 @@ android {
 
 dependencies {
 //    compile project(':library')
-    compile 'com.cloudipsp:android:0.98'
+    compile 'com.cloudipsp:android:+'
 }
