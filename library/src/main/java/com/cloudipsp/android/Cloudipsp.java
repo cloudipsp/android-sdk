@@ -26,7 +26,6 @@ import java.util.TreeMap;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
@@ -341,7 +340,7 @@ public final class Cloudipsp {
         }
         final String read = call(HOST + path, body.toString(), "application/json");
 //        if (BuildConfig.DEBUG) {
-//            Log.i(TAG, "Read: " + read);
+//            Log.i("Cloudipsp", "Read: " + read);
 //        }
         return parseResponse(read);
     }
@@ -452,7 +451,7 @@ public final class Cloudipsp {
             output.write(sentBytes);
             output.flush();
 //            if (BuildConfig.DEBUG) {
-//                Log.i(TAG, "Sent:" + content);
+//                Log.i("Cloudipsp", "Sent:" + content);
 //            }
             connection.connect();
             final int contentLength = connection.getHeaderFieldInt("ContentLength", 350);

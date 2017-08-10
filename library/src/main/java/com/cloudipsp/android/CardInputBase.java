@@ -5,7 +5,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.widget.EditText;
-import android.widget.TextView;
 
 /**
  * Created by vberegovoy on 6/20/17.
@@ -70,12 +69,8 @@ class CardInputBase extends EditText {
     }
 
     private final boolean isParentClass(String className) {
-        return className.equals(TextView.class.getName())
-                || className.equals(EditText.class.getName())
-                || className.equals("android.widget.Editor")
-                || className.startsWith("android.widget.Editor$")
+        return className.startsWith("android.widget.")
                 || className.equals("android.support.design.widget.TextInputLayout")
-                || className.equals("com.huawei.android.hwcontrol.HwEditor")
-                ;
+                || className.equals("com.huawei.android.hwcontrol.HwEditor");
     }
 }
