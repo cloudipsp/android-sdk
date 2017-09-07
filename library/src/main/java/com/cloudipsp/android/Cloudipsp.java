@@ -88,7 +88,7 @@ public final class Cloudipsp {
         }) {
             @Override
             protected void runInTry() throws java.lang.Exception {
-                final String token = getToken(order);
+                final String token = getToken(order, card);
                 final Checkout checkout = checkout(card, token, order.email);
                 final RunnableWithExceptionWrapper orderChecker = new RunnableWithExceptionWrapper(payCallback) {
                     @Override
@@ -137,7 +137,7 @@ public final class Cloudipsp {
         protected abstract void runInTry() throws java.lang.Exception;
     }
 
-    private String getToken(Order order) throws java.lang.Exception {
+    private String getToken(Order order, Card card) throws java.lang.Exception {
         final TreeMap<String, Object> request = new TreeMap<String, Object>();
 
         request.put("order_id", order.id);
@@ -169,8 +169,12 @@ public final class Cloudipsp {
         if (!TextUtils.isEmpty(order.serverCallbackUrl)) {
             request.put("server_callback_url", order.serverCallbackUrl);
         }
-        if (!TextUtils.isEmpty(order.reservationData)) {
-            request.put("reservation_data", order.reservationData);
+        if (Card.SOURCE_NFC == card.source) {
+            request.put("reservation_data", "eyJ0eXBlIjoibmZjX21vYmlsZSJ9");
+        } else {
+            if (!TextUtils.isEmpty(order.reservationData)) {
+                request.put("reservation_data", order.reservationData);
+            }
         }
         if (order.lang != null) {
             request.put("lang", order.lang.name());
@@ -221,7 +225,9 @@ public final class Cloudipsp {
     private static Checkout checkout(Card card, String token, String email) throws java.lang.Exception {
         final TreeMap<String, Object> request = new TreeMap<String, Object>();
         request.put("card_number", card.cardNumber);
-        request.put("cvv2", card.cvv);
+        if (card.source == Card.SOURCE_FORM) {
+            request.put("cvv2", card.cvv);
+        }
         request.put("expiry_date", String.format("%02d%02d", card.mm, card.yy));
         request.put("payment_system", "card");
         request.put("token", token);

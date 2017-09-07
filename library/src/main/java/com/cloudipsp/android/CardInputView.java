@@ -13,7 +13,7 @@ import android.widget.TextView;
 /**
  * Created by vberegovoy on 22.12.15.
  */
-public final class CardInputView extends FrameLayout {
+public final class CardInputView extends FrameLayout implements CardDisplay {
     private static final ConfirmationErrorHandler DEFAULT_CONFIRMATION_ERROR_HANDLER = new ConfirmationErrorHandler() {
         @Override
         public void onCardInputErrorClear(CardInputView view, EditText editText) {
@@ -90,6 +90,10 @@ public final class CardInputView extends FrameLayout {
 
     public boolean isHelpedNeeded() {
         return helpedNeeded;
+    }
+
+    public void display(Card card) {
+        view.display(card);
     }
 
     public Card confirm() {

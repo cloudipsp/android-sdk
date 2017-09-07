@@ -22,6 +22,8 @@ public final class Card implements Parcelable {
     };
 
     static final int INVALID_VALUE = -1;
+    public static final int SOURCE_FORM = 0;
+    public static final int SOURCE_NFC = 1;
 
     public enum Type {
         VISA {
@@ -69,12 +71,18 @@ public final class Card implements Parcelable {
     int mm;
     int yy;
     String cvv;
+    public final int source;
 
     Card(String cardNumber, String expireMm, String expireYy, String cvv) {
+        this(cardNumber, expireMm, expireYy, cvv, SOURCE_FORM);
+    }
+
+    Card(String cardNumber, String expireMm, String expireYy, String cvv, int source) {
         setCardNumber(cardNumber);
         setExpireMonth(expireMm);
         setExpireYear(expireYy);
         setCvv(cvv);
+        this.source = source;
     }
 
     private Card(Parcel input) {
@@ -82,6 +90,7 @@ public final class Card implements Parcelable {
         mm = input.readInt();
         yy = input.readInt();
         cvv = input.readString();
+        source = input.readInt();
     }
 
     @Override
@@ -95,6 +104,7 @@ public final class Card implements Parcelable {
         output.writeInt(mm);
         output.writeInt(yy);
         output.writeString(cvv);
+        output.writeInt(source);
     }
 
     public void setCvv(String value) {
@@ -153,11 +163,15 @@ public final class Card implements Parcelable {
     }
 
     public boolean isValidCvv() {
-        if (cvv == null) {
-            return false;
+        if (source == SOURCE_FORM) {
+            if (cvv == null) {
+                return false;
+            }
+            final int length = cvv.length();
+            return length == 3 || length == 4;
+        } else {
+            return true;
         }
-        final int length = cvv.length();
-        return length == 3 || length == 4;
     }
 
     private static boolean lunaCheck(String cardNumber) {
