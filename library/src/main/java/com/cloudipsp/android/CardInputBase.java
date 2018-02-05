@@ -71,6 +71,7 @@ class CardInputBase extends EditText {
     private final boolean isParentClass(String className) {
         return className.startsWith("android.widget.")
                 || className.equals("android.support.design.widget.TextInputLayout")
-                || className.equals("com.huawei.android.hwcontrol.HwEditor");
+                || className.equals("com.huawei.android.hwcontrol.HwEditor")
+                || className.startsWith("com.letv.leui.text.");
     }
 }
