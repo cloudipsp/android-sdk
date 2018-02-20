@@ -2,6 +2,8 @@ package com.cloudipsp.android;
 
 import android.content.Context;
 import android.os.Parcelable;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.view.View;
@@ -41,6 +43,20 @@ public final class CardInputLayout extends FrameLayout implements CardDisplay {
         editMm = findOne(CardExpMmEdit.class);
         editYy = findOne(CardExpYyEdit.class);
         editCvv = findOne(CardCvvEdit.class);
+        editCardNumber.addTextChangedListenerInternal(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                editCvv.setCvv4(CvvUtils.isCvv4Length(s.toString()));
+            }
+        });
     }
 
     @Override

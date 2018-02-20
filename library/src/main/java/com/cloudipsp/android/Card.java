@@ -136,7 +136,7 @@ public final class Card implements Parcelable {
     }
 
     private boolean isValidExpireYearValue() {
-        return yy >= 17 && yy <= 99;
+        return yy >= 18 && yy <= 99;
     }
 
     public boolean isValidExpireYear() {
@@ -168,7 +168,11 @@ public final class Card implements Parcelable {
                 return false;
             }
             final int length = cvv.length();
-            return length == 3 || length == 4;
+            if (CvvUtils.isCvv4Length(cardNumber)) {
+                return length == 4;
+            } else {
+                return length == 3;
+            }
         } else {
             return true;
         }

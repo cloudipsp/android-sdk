@@ -32,6 +32,10 @@ class CardInputBase extends EditText {
         }
     }
 
+    void addTextChangedListenerInternal(TextWatcher watcher) {
+        super.addTextChangedListener(watcher);
+    }
+
     protected void setTextInternal(CharSequence text) {
         super.setText(text, BufferType.NORMAL);
     }
