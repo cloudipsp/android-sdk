@@ -26,8 +26,18 @@ public class CardCvvEdit extends CardInputBase {
     }
 
     private void init() {
-        setFilters(new InputFilter[]{new InputFilter.LengthFilter(4)});
-        setInputType(EditorInfo.TYPE_NUMBER_VARIATION_PASSWORD);
+        setCvv4(false);
         setSingleLine();
+        setInputType(EditorInfo.TYPE_NUMBER_VARIATION_PASSWORD | EditorInfo.TYPE_CLASS_NUMBER);
+    }
+
+    void setCvv4(boolean enabled) {
+        setFilters(new InputFilter[]{new InputFilter.LengthFilter(enabled ? 4 : 3)});
+        if (!enabled) {
+            final String cvv = getTextInternal().toString();
+            if (cvv.length() == 4) {
+                setTextInternal(cvv.substring(0, 3));
+            }
+        }
     }
 }

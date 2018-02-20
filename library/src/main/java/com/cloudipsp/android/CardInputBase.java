@@ -32,6 +32,10 @@ class CardInputBase extends EditText {
         }
     }
 
+    void addTextChangedListenerInternal(TextWatcher watcher) {
+        super.addTextChangedListener(watcher);
+    }
+
     protected void setTextInternal(CharSequence text) {
         super.setText(text, BufferType.NORMAL);
     }
@@ -71,6 +75,7 @@ class CardInputBase extends EditText {
     private final boolean isParentClass(String className) {
         return className.startsWith("android.widget.")
                 || className.equals("android.support.design.widget.TextInputLayout")
-                || className.equals("com.huawei.android.hwcontrol.HwEditor");
+                || className.equals("com.huawei.android.hwcontrol.HwEditor")
+                || className.startsWith("com.letv.leui.text.");
     }
 }
