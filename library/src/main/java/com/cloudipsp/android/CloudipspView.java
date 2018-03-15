@@ -1,5 +1,7 @@
 package com.cloudipsp.android;
 
+import org.json.JSONObject;
+
 /**
  * Created by vberegovoy on 28.11.15.
  */
@@ -20,7 +22,7 @@ public interface CloudipspView {
         }
 
         interface Listener {
-            public void onConfirmed(String jsonOfConfirmation);
+            public void onConfirmed(JSONObject response);
         }
     }
 
