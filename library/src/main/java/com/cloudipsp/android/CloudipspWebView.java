@@ -11,6 +11,11 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.URLDecoder;
+
 /**
 * Created by vberegovoy on 28.11.15.
 */
@@ -69,7 +74,17 @@ public class CloudipspWebView extends WebView implements CloudipspView {
                     reload();
 
                     final String jsonOfConfirmation = url.split(URL_START_PATTERN)[1];
-                    confirmation.listener.onConfirmed(jsonOfConfirmation);
+                    JSONObject response;
+                    try {
+                        response = new JSONObject(jsonOfConfirmation);
+                    } catch (JSONException jsonException) {
+                        try {
+                            response = new JSONObject(URLDecoder.decode(jsonOfConfirmation, "UTF-8"));
+                        } catch (Exception e) {
+                            response = null;
+                        }
+                    }
+                    confirmation.listener.onConfirmed(response);
 
                     setVisibility(View.GONE);
                     return true;

@@ -397,11 +397,10 @@ public final class Cloudipsp {
 
         final CloudipspView.PayConfirmation confirmation = new CloudipspView.PayConfirmation(htmlPageContent, contentType[0], checkout.url, new CloudipspView.PayConfirmation.Listener() {
             @Override
-            public void onConfirmed(final String jsonOfConfirmation) {
+            public void onConfirmed(final JSONObject response) {
                 new RunnableWithExceptionWrapper(callback) {
                     @Override
                     protected void runInTry() throws java.lang.Exception {
-                        final JSONObject response = new JSONObject(jsonOfConfirmation);
                         if (!response.getString("url").equals(URL_CALLBACK)) {
                             throw new java.lang.Exception();
                         }
