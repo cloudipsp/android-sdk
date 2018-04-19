@@ -71,7 +71,7 @@ public class CloudipspWebView extends WebView implements CloudipspView {
 //                    Log.i(Cloudipsp.TAG, "WebUrl: " + url);
 //                }
                 if (url.startsWith(URL_START_PATTERN)) {
-                    reload();
+                    blankPage();
 
                     final String jsonOfConfirmation = url.split(URL_START_PATTERN)[1];
                     JSONObject response;
@@ -100,6 +100,11 @@ public class CloudipspWebView extends WebView implements CloudipspView {
         } else {
             loadDataWithBaseURL(confirmation.url, confirmation.htmlPageContent, confirmation.contentType, encoding(confirmation.contentType), null);
         }
+    }
+
+    private void blankPage() {
+        loadDataWithBaseURL(null, "<html></html>", "text/html", "UTF-8", null);
+        invalidate();
     }
 
     private static String encoding(String contentType) {
