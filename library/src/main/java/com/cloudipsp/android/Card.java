@@ -73,11 +73,11 @@ public final class Card implements Parcelable {
     String cvv;
     public final int source;
 
-    Card(String cardNumber, String expireMm, String expireYy, String cvv) {
+    public Card(String cardNumber, String expireMm, String expireYy, String cvv) {
         this(cardNumber, expireMm, expireYy, cvv, SOURCE_FORM);
     }
 
-    Card(String cardNumber, String expireMm, String expireYy, String cvv, int source) {
+    public Card(String cardNumber, String expireMm, String expireYy, String cvv, int source) {
         setCardNumber(cardNumber);
         setExpireMonth(expireMm);
         setExpireYear(expireYy);
