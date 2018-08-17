@@ -144,7 +144,7 @@ public final class Cloudipsp {
         request.put("merchant_id", String.valueOf(merchantId));
         request.put("order_desc", order.description);
         request.put("amount", String.valueOf(order.amount));
-        request.put("currency", order.currency.name());
+        request.put("currency", order.currency);
         request.put("signature", "button");
         if (!TextUtils.isEmpty(order.productId)) {
             request.put("product_id", order.productId);
@@ -276,20 +276,6 @@ public final class Cloudipsp {
         } catch (java.lang.Exception e) {
             recTokenLifeTime = null;
         }
-        final String settlementCcy = orderData.optString("settlement_currency");
-        final Currency settlementCcyEnum;
-        if (TextUtils.isEmpty(settlementCcy)) {
-            settlementCcyEnum = null;
-        } else {
-            settlementCcyEnum = Currency.valueOf(settlementCcy);
-        }
-        final String actualCcy = orderData.optString("actual_currency");
-        final Currency actualCcyEnum;
-        if (TextUtils.isEmpty(actualCcy)) {
-            actualCcyEnum = null;
-        } else {
-            actualCcyEnum = Currency.valueOf(actualCcy);
-        }
         Date settlementDate;
         try {
             settlementDate = DATE_FORMAT.parse(orderData.getString("settlement_date"));
@@ -310,7 +296,7 @@ public final class Cloudipsp {
                         orderData.getInt("card_bin"),
                         Integer.valueOf(orderData.getString("amount")),
                         orderData.getInt("payment_id"),
-                        Currency.valueOf(orderData.getString("currency")),
+                        orderData.getString("currency"),
                         Receipt.Status.valueOf(orderData.getString("order_status")),
                         Receipt.TransationType.valueOf(orderData.getString("tran_type")),
                         orderData.getString("sender_cell_phone"),
@@ -324,12 +310,12 @@ public final class Cloudipsp {
                         recTokenLifeTime,
                         orderData.optInt("reversal_amount", -1),
                         orderData.optInt("settlement_amount", -1),
-                        settlementCcyEnum,
+                        orderData.optString("settlement_currency"),
                         settlementDate,
                         orderData.optInt("eci", -1),
                         orderData.optInt("fee", -1),
                         orderData.optInt("actual_amount", -1),
-                        actualCcyEnum,
+                        orderData.optString("actual_currency"),
                         orderData.optString("payment_system"),
                         verificationStatusEnum,
                         orderData.getString("signature"),

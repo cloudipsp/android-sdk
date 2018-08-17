@@ -50,7 +50,7 @@ public class Receipt implements Parcelable {
     public final int cardBin;
     public final int amount;
     public final int paymentId;
-    public final Currency currency;
+    public final String currency;
     public final Status status;
     public final TransationType transationType;
     public final String senderCellPhone;
@@ -64,12 +64,12 @@ public class Receipt implements Parcelable {
     public final Date recTokenLifeTime;
     public final int reversalAmount;
     public final int settlementAmount;
-    public final Currency settlementCurrency;
+    public final String settlementCurrency;
     public final Date settlementDate;
     public final int eci;
     public final int fee;
     public final int actualAmount;
-    public final Currency actualCurrency;
+    public final String actualCurrency;
     public final String paymentSystem;
     public final VerificationStatus verificationStatus;
     public final String signature;
@@ -81,7 +81,7 @@ public class Receipt implements Parcelable {
         cardBin = input.readInt();
         amount = input.readInt();
         paymentId = input.readInt();
-        currency = (Currency) input.readSerializable();
+        currency = input.readString();
         status = (Status) input.readSerializable();
         transationType = (TransationType) input.readSerializable();
         senderCellPhone = input.readString();
@@ -95,12 +95,12 @@ public class Receipt implements Parcelable {
         recTokenLifeTime = (Date)input.readSerializable();
         reversalAmount = input.readInt();
         settlementAmount = input.readInt();
-        settlementCurrency = (Currency) input.readSerializable();
+        settlementCurrency = input.readString();
         settlementDate = (Date) input.readSerializable();
         eci = input.readInt();
         fee = input.readInt();
         actualAmount = input.readInt();
-        actualCurrency = (Currency) input.readSerializable();
+        actualCurrency = input.readString();
         paymentSystem = input.readString();
         verificationStatus = (VerificationStatus) input.readSerializable();
         signature = input.readString();
@@ -111,12 +111,12 @@ public class Receipt implements Parcelable {
         }
     }
 
-    Receipt(String maskedCard, int cardBin, int amount, int paymentId, Currency currency,
+    Receipt(String maskedCard, int cardBin, int amount, int paymentId, String currency,
                     Status status, TransationType transationType, String senderCellPhone, String senderAccount,
                     Card.Type cardType, String rrn, String approvalCode, String responseCode, String productId,
                     String recToken, Date recTokenLifeTime, int reversalAmount, int settlementAmount,
-                    Currency settlementCurrency, Date settlementDate, int eci, int fee, int actualAmount,
-                    Currency actualCurrency, String paymentSystem, VerificationStatus verificationStatus,
+                    String settlementCurrency, Date settlementDate, int eci, int fee, int actualAmount,
+                    String actualCurrency, String paymentSystem, VerificationStatus verificationStatus,
                     String signature, JSONObject orderData) {
         this.maskedCard = maskedCard;
         this.cardBin = cardBin;

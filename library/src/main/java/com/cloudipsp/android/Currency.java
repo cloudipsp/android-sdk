@@ -8,7 +8,8 @@ public enum Currency {
     RUB,
     USD,
     EUR,
-    GBP;
+    GBP,
+    KZT;
 
     @Override
     public String toString() {
