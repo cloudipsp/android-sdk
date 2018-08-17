@@ -38,7 +38,7 @@ public class Order implements Parcelable {
     }
 
     public final int amount;
-    public final Currency currency;
+    public final String currency;
     public final String id;
     public final String description;
     public final String email;
@@ -62,7 +62,7 @@ public class Order implements Parcelable {
 
     private Order(Parcel input) {
         amount = input.readInt();
-        currency = (Currency) input.readSerializable();
+        currency = input.readString();
         id = input.readString();
         description = input.readString();
         email = input.readString();
@@ -92,6 +92,10 @@ public class Order implements Parcelable {
     }
 
     public Order(int amount, Currency currency, String id, String description, String email) {
+        this(amount, currency == null ? null : currency.name(), id, description, email);
+    }
+
+    public Order(int amount, String currency, String id, String description, String email) {
         if (amount <= 0) {
             throw new IllegalArgumentException("Amount should be more than 0");
         }
