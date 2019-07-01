@@ -1,15 +1,19 @@
 apply plugin: 'com.android.application'
 
+def safeExtGet(prop, fallback) {
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+}
+
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.1"
+    compileSdkVersion safeExtGet('compileSdkVersion', 25)
+    buildToolsVersion safeExtGet('buildToolsVersion', '25.0.2')
 
     defaultConfig {
-        applicationId "com.cloudipsp.android.demo"
-        minSdkVersion 14
-        targetSdkVersion 22
+        applicationId 'com.cloudipsp.android.demo'
+        minSdkVersion safeExtGet('minSdkVersion', 14)
+        targetSdkVersion safeExtGet('targetSdkVersion', 22)
         versionCode 1
-        versionName "1.0"
+        versionName '1.0'
     }
     buildTypes {
         release {
@@ -19,6 +23,9 @@ android {
 }
 
 dependencies {
-//    compile project(':library')
-    compile 'com.cloudipsp:android:+'
+    implementation project(':library')
+
+    implementation 'com.google.android.gms:play-services-base:17.0.0'
+    implementation 'com.google.android.gms:play-services-wallet:17.0.0'
+//    compile 'com.cloudipsp:android:+'
 }

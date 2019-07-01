@@ -20,7 +20,7 @@ import com.cloudipsp.android.Receipt;
 
 
 public class SimpleExampleActivity extends Activity implements View.OnClickListener {
-    private static final int MERCHANT_ID = 1396424;
+    private static final int MERCHANT_ID = 900234;
 
     private EditText editAmount;
     private Spinner spinnerCcy;
@@ -37,11 +37,11 @@ public class SimpleExampleActivity extends Activity implements View.OnClickListe
         setContentView(R.layout.activity_simple_example);
 
         findViewById(R.id.btn_amount).setOnClickListener(this);
-        editAmount = (EditText) findViewById(R.id.edit_amount);
-        spinnerCcy = (Spinner) findViewById(R.id.spinner_ccy);
-        editEmail = (EditText) findViewById(R.id.edit_email);
-        editDescription = (EditText) findViewById(R.id.edit_description);
-        cardInput = (CardInputView) findViewById(R.id.card_input);
+        editAmount = findViewById(R.id.edit_amount);
+        spinnerCcy = findViewById(R.id.spinner_ccy);
+        editEmail = findViewById(R.id.edit_email);
+        editDescription = findViewById(R.id.edit_description);
+        cardInput = findViewById(R.id.card_input);
         cardInput.setHelpedNeeded(BuildConfig.DEBUG);
         cardInput.setCompletionListener(new CardInputView.CompletionListener() {
             @Override
@@ -51,7 +51,7 @@ public class SimpleExampleActivity extends Activity implements View.OnClickListe
         });
         findViewById(R.id.btn_pay).setOnClickListener(this);
 
-        webView = (CloudipspWebView) findViewById(R.id.web_view);
+        webView = findViewById(R.id.web_view);
         cloudipsp = new Cloudipsp(MERCHANT_ID, webView);
 
         spinnerCcy.setAdapter(new ArrayAdapter<Currency>(this, android.R.layout.simple_spinner_item, Currency.values()));
@@ -114,6 +114,7 @@ public class SimpleExampleActivity extends Activity implements View.OnClickListe
                 final Currency currency = (Currency) spinnerCcy.getSelectedItem();
                 final Order order = new Order(amount, currency, "vb_" + System.currentTimeMillis(), description, email);
                 order.setLang(Order.Lang.ru);
+                order.setRequiredRecToken(true);
 
                 cloudipsp.pay(card, order, new Cloudipsp.PayCallback() {
                     @Override

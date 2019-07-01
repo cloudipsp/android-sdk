@@ -3,6 +3,7 @@
     <string name="app_name">cloudipsp.com demo</string>
     <string name="btn_simple_example">Simple Example</string>
     <string name="btn_flexible_example">Flexible Example</string>
+    <string name="btn_google_pay">Google Pay</string>
 
     <string name="lbl_amount">Amount:</string>
     <string name="lbl_ccy">Currency:</string>

@@ -40,14 +40,14 @@ public class FlexibleExampleActivity extends Activity implements View.OnClickLis
         setContentView(R.layout.activity_flexible_example);
 
         findViewById(R.id.btn_amount).setOnClickListener(this);
-        editAmount = (EditText) findViewById(R.id.edit_amount);
-        spinnerCcy = (Spinner) findViewById(R.id.spinner_ccy);
-        editEmail = (EditText) findViewById(R.id.edit_email);
-        editDescription = (EditText) findViewById(R.id.edit_description);
-        cardLayout = (CardInputLayout) findViewById(R.id.card_layout);
+        editAmount = findViewById(R.id.edit_amount);
+        spinnerCcy = findViewById(R.id.spinner_ccy);
+        editEmail = findViewById(R.id.edit_email);
+        editDescription = findViewById(R.id.edit_description);
+        cardLayout = findViewById(R.id.card_layout);
         findViewById(R.id.btn_pay).setOnClickListener(this);
 
-        webView = (CloudipspWebView) findViewById(R.id.web_view);
+        webView = findViewById(R.id.web_view);
         cloudipsp = new Cloudipsp(MERCHANT_ID, webView);
 
         spinnerCcy.setAdapter(new ArrayAdapter<Currency>(this, android.R.layout.simple_spinner_item, Currency.values()));

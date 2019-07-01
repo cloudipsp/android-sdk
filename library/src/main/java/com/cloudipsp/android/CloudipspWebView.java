@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
@@ -67,9 +68,9 @@ public class CloudipspWebView extends WebView implements CloudipspView {
         setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-//                if (BuildConfig.DEBUG) {
-//                    Log.i(Cloudipsp.TAG, "WebUrl: " + url);
-//                }
+                if (BuildConfig.DEBUG) {
+                    Log.i("Cloudipsp", "WebUrl: " + url);
+                }
                 if (url.startsWith(URL_START_PATTERN)) {
                     blankPage();
 
