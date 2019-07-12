@@ -47,7 +47,7 @@ public class Receipt implements Parcelable {
     }
 
     public final String maskedCard;
-    public final int cardBin;
+    public final String cardBin;
     public final int amount;
     public final int paymentId;
     public final String currency;
@@ -78,7 +78,7 @@ public class Receipt implements Parcelable {
 
     private Receipt(Parcel input) {
         maskedCard = input.readString();
-        cardBin = input.readInt();
+        cardBin = input.readString();
         amount = input.readInt();
         paymentId = input.readInt();
         currency = input.readString();
@@ -111,7 +111,7 @@ public class Receipt implements Parcelable {
         }
     }
 
-    Receipt(String maskedCard, int cardBin, int amount, int paymentId, String currency,
+    Receipt(String maskedCard, String cardBin, int amount, int paymentId, String currency,
                     Status status, TransationType transationType, String senderCellPhone, String senderAccount,
                     Card.Type cardType, String rrn, String approvalCode, String responseCode, String productId,
                     String recToken, Date recTokenLifeTime, int reversalAmount, int settlementAmount,
@@ -156,7 +156,7 @@ public class Receipt implements Parcelable {
     @Override
     public void writeToParcel(Parcel output, int flags) {
         output.writeString(maskedCard);
-        output.writeInt(cardBin);
+        output.writeString(cardBin);
         output.writeInt(amount);
         output.writeInt(paymentId);
         output.writeSerializable(currency);

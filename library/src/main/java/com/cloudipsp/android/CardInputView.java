@@ -80,7 +80,7 @@ public final class CardInputView extends FrameLayout implements CardDisplay {
     private void nextHelpCard() {
         if (helpedNeeded) {
             currentHelpCard %= HELP_CARDS.length;
-            view.setHelpCard(HELP_CARDS[currentHelpCard++], "12", "18", "111");
+            view.setHelpCard(HELP_CARDS[currentHelpCard++], "12", "20", "111");
         }
     }
 
@@ -118,6 +118,6 @@ public final class CardInputView extends FrameLayout implements CardDisplay {
     }
 
     public interface CompletionListener {
-        public void onCompleted(CardInputView view);
+        void onCompleted(CardInputView view);
     }
 }

@@ -1,28 +1,37 @@
 apply plugin: 'com.android.library'
 apply from: '../maven_push.gradle'
 
+def safeExtGet(prop, fallback) {
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+}
+
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.1"
+    compileSdkVersion safeExtGet('compileSdkVersion', 25)
+    buildToolsVersion safeExtGet('buildToolsVersion', '25.0.2')
 
     def apiHost
-    if (project.hasProperty("host")) {
-        apiHost = project.property("host")
+    if (project.hasProperty('host')) {
+        apiHost = project.property('host')
     } else {
-        apiHost = "https://api.fondy.eu"
+        apiHost = 'https://api.fondy.eu'
     }
     defaultConfig {
-        minSdkVersion 10
-        targetSdkVersion 22
+        minSdkVersion safeExtGet('minSdkVersion', 10)
+        targetSdkVersion safeExtGet('targetSdkVersion', 22)
         versionCode 1
         versionName "1.0"
 
-        buildConfigField "String", "API_HOST", "\""+apiHost+"\""
+        buildConfigField 'String', 'API_HOST', "\"$apiHost\""
     }
-    println("API_HOST: "+apiHost)
+    println("API_HOST: $apiHost")
     buildTypes {
         release {
             minifyEnabled false
         }
     }
+}
+
+dependencies {
+    compileOnly 'com.google.android.gms:play-services-base:17.0.0'
+    compileOnly 'com.google.android.gms:play-services-wallet:17.0.0'
 }

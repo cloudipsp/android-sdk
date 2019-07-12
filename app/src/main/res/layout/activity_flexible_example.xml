@@ -1,11 +1,11 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="10dp">
+    android:layout_height="match_parent">
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:padding="10dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -85,11 +85,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="7dp"
-                        android:imeOptions="actionNext"
                         android:hint="My Awesome Hint Card Number"
+                        android:imeOptions="actionNext"
+                        android:nextFocusRight="@+id/edit_mm"
                         android:nextFocusDown="@+id/edit_mm"
-                        android:nextFocusForward="@+id/edit_mm"
-                        android:nextFocusRight="@+id/edit_mm" />
+                        android:nextFocusForward="@+id/edit_mm" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -112,9 +112,9 @@
                             android:gravity="center"
                             android:hint="My Awesome Hint MM"
                             android:imeOptions="actionNext"
-                            android:nextFocusDown="@+id/edit_yy"
                             android:nextFocusRight="@+id/edit_yy"
-                            android:nextFocusUp="@id/edit_card_number" />
+                            android:nextFocusUp="@id/edit_card_number"
+                            android:nextFocusDown="@+id/edit_yy" />
 
                         <com.cloudipsp.android.CardExpYyEdit
                             android:id="@+id/edit_yy"
@@ -125,9 +125,9 @@
                             android:gravity="center"
                             android:hint="My Awesome Hint YY"
                             android:imeOptions="actionNext"
-                            android:nextFocusDown="@+id/edit_cvv"
                             android:nextFocusLeft="@id/edit_mm"
-                            android:nextFocusUp="@id/edit_mm" />
+                            android:nextFocusUp="@id/edit_mm"
+                            android:nextFocusDown="@+id/edit_cvv" />
                     </LinearLayout>
 
                     <TextView
@@ -153,13 +153,27 @@
                 android:layout_marginTop="10dp"
                 android:visibility="gone" />
 
-            <Button
-                android:id="@+id/btn_pay"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:gravity="center"
-                android:text="@string/btn_pay" />
+                android:layout_marginTop="10dp">
+
+                <Button
+                    android:id="@+id/btn_pay_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/btn_pay_card" />
+
+                <Button
+                    android:id="@+id/btn_pay_google"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/btn_pay_google" />
+            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 
