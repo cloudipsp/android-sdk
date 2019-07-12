@@ -1,13 +1,18 @@
 package com.cloudipsp.android;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.net.Uri;
+import android.net.http.SslError;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
+import android.webkit.SslErrorHandler;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -92,6 +97,44 @@ public class CloudipspWebView extends WebView implements CloudipspView {
                 } else {
                     return super.shouldOverrideUrlLoading(view, url);
                 }
+            }
+
+            @Override
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                handleError(errorCode, description);
+            }
+
+            @Override
+            @TargetApi(Build.VERSION_CODES.M)
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                handleError(error.getErrorCode(), error.getDescription().toString());
+            }
+
+            private void handleError(int errorCode, String description) {
+                switch (errorCode) {
+                    case WebViewClient.ERROR_HOST_LOOKUP:
+                    case WebViewClient.ERROR_IO:
+                    case WebViewClient.ERROR_CONNECT:
+                        confirmation.listener.onNetworkAccessError(description);
+                        handleError();
+                        break;
+                    case WebViewClient.ERROR_FAILED_SSL_HANDSHAKE:
+                        confirmation.listener.onNetworkSecurityError(description);
+                        handleError();
+                        break;
+                }
+            }
+
+            @Override
+            public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+                super.onReceivedSslError(view, handler, error);
+                confirmation.listener.onNetworkSecurityError(error.toString());
+                handleError();
+            }
+
+            private void handleError() {
+                blankPage();
+                skipConfirm();
             }
         });
 

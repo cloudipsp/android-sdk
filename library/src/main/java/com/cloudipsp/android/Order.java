@@ -57,6 +57,7 @@ public class Order implements Parcelable {
     Lang lang;
     String serverCallbackUrl;
     String reservationData;
+    String paymentSystem;
 
     final HashMap<String, String> arguments = new HashMap<String, String>();
 
@@ -80,6 +81,7 @@ public class Order implements Parcelable {
         lang = (Lang) input.readSerializable();
         serverCallbackUrl = input.readString();
         reservationData = input.readString();
+        paymentSystem = input.readString();
 
         final Bundle bundle = input.readBundle();
         for (String key : bundle.keySet()) {
@@ -244,15 +246,16 @@ public class Order implements Parcelable {
         output.writeString(defaultPaymentSystem);
         output.writeInt(lifetime);
         output.writeString(merchantData);
-        output.writeInt(preauth?1:0);
-        output.writeInt(requiredRecToken?1:0);
-        output.writeInt(verification?1:0);
+        output.writeInt(preauth ? 1 : 0);
+        output.writeInt(requiredRecToken ? 1 : 0);
+        output.writeInt(verification ? 1 : 0);
         output.writeSerializable(verificationType);
         output.writeString(recToken);
         output.writeString(version);
         output.writeSerializable(lang);
         output.writeString(serverCallbackUrl);
         output.writeString(reservationData);
+        output.writeString(paymentSystem);
 
         final Bundle bundle = new Bundle();
         for (String key : arguments.keySet()) {

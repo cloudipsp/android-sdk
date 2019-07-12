@@ -118,6 +118,6 @@ public final class CardInputView extends FrameLayout implements CardDisplay {
     }
 
     public interface CompletionListener {
-        public void onCompleted(CardInputView view);
+        void onCompleted(CardInputView view);
     }
 }

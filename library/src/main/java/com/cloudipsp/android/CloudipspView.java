@@ -22,7 +22,11 @@ public interface CloudipspView {
         }
 
         interface Listener {
-            public void onConfirmed(JSONObject response);
+            void onConfirmed(JSONObject response);
+
+            void onNetworkAccessError(String description);
+
+            void onNetworkSecurityError(String description);
         }
     }
 

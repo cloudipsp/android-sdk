@@ -55,7 +55,7 @@ import javax.net.ssl.SSLSocketFactory;
  * Created by vberegovoy on 09.11.15.
  */
 public final class Cloudipsp {
-    private static final String HOST = "https://public.dev.cipsp.net";
+    private static final String HOST = BuildConfig.API_HOST;
     private static final String URL_CALLBACK = "http://callback";
     private static final SimpleDateFormat DATE_AND_FORMAT = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.US);
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy", Locale.US);
@@ -193,6 +193,11 @@ public final class Cloudipsp {
         mobilePayRequest.put("currency", order.currency);
 
         final JSONObject mobilePayResponse = callJson("/api/checkout/ajax/mobile_pay", mobilePayRequest);
+        if (mobilePayResponse.has("error_message")) {
+            handleResponseError(mobilePayResponse);
+        }
+        order.paymentSystem = mobilePayResponse.getString("payment_system");
+
         final JSONArray methodsJson = mobilePayResponse.getJSONArray("methods");
         for (int i = methodsJson.length() - 1; i >= 0; --i) {
             final JSONObject methodJson = methodsJson.getJSONObject(i);
@@ -207,13 +212,22 @@ public final class Cloudipsp {
         if (Activity.RESULT_CANCELED == resultCode) {
             return false;
         }
+        if (data == null) {
+            throw new NullPointerException("data should be not null");
+        }
+        if (order == null) {
+            throw new NullPointerException("order should be not null");
+        }
+        if (payCallback == null) {
+            throw new NullPointerException("payCallback should be not null");
+        }
         if (Activity.RESULT_OK == resultCode) {
             final PaymentData paymentData = PaymentData.getFromIntent(data);
             new PayTask(payCallback) {
                 @Override
                 public void runInTry() throws java.lang.Exception {
                     final String token = getToken(order, null);
-                    final Checkout checkout = checkoutGooglePay(token, order.email, paymentData);
+                    final Checkout checkout = checkoutGooglePay(token, order, paymentData);
                     payContinue(token, checkout, callback);
                 }
             }.start();
@@ -234,6 +248,20 @@ public final class Cloudipsp {
             public void runInTry() throws java.lang.Exception {
                 final String token = getToken(order, card);
                 final Checkout checkout = checkout(card, token, order.email);
+                payContinue(token, checkout, callback);
+            }
+        }.start();
+    }
+
+    public void payToken(final Card card, final String token, PayCallback callback) {
+        if (!card.isValidCard()) {
+            throw new IllegalArgumentException("Card should be valid");
+        }
+
+        new PayTask(callback) {
+            @Override
+            public void runInTry() throws java.lang.Exception {
+                final Checkout checkout = checkout(card, token, null);
                 payContinue(token, checkout, callback);
             }
         }.start();
@@ -390,7 +418,9 @@ public final class Cloudipsp {
         request.put("expiry_date", String.format(Locale.US, "%02d%02d", card.mm, card.yy));
         request.put("payment_system", "card");
         request.put("token", token);
-        request.put("email", email);
+        if (email != null) {
+            request.put("email", email);
+        }
 
         final JSONObject response = call("/api/checkout/ajax", request);
         final String url = response.getString("url");
@@ -429,11 +459,11 @@ public final class Cloudipsp {
         }
     }
 
-    private static Checkout checkoutGooglePay(String token, String email, PaymentData paymentData) throws java.lang.Exception {
+    private static Checkout checkoutGooglePay(String token, Order order, PaymentData paymentData) throws java.lang.Exception {
         final TreeMap<String, Object> request = new TreeMap<>();
-        request.put("payment_system", "mobile_pay");
+        request.put("payment_system", order.paymentSystem);
         request.put("token", token);
-        request.put("email", email);
+        request.put("email", order.email);
 
         final JSONObject data = new JSONObject();
         data.put("apiVersion", "1");
@@ -442,7 +472,11 @@ public final class Cloudipsp {
         final CardInfo cardInfo = paymentData.getCardInfo();
         paymentMethodData.put("description", cardInfo.getCardDescription());
         paymentMethodData.put("type", "CARD");
-        paymentMethodData.put("info", cardInfo.getCardDetails());
+        final JSONObject info = new JSONObject();
+        info.put("cardDetails", cardInfo.getCardDetails());
+        info.put("cardNetwork", cardInfo.getCardNetwork());
+
+        paymentMethodData.put("info", info);
         final JSONObject tokenizationData = new JSONObject();
         tokenizationData.put("type", "DIRECT");
         tokenizationData.put("token", paymentData.getPaymentMethodToken().getToken());
@@ -511,7 +545,7 @@ public final class Cloudipsp {
         return new Receipt
                 (
                         orderData.getString("masked_card"),
-                        orderData.getInt("card_bin"),
+                        orderData.getString("card_bin"),
                         Integer.valueOf(orderData.getString("amount")),
                         orderData.getInt("payment_id"),
                         orderData.getString("currency"),
@@ -563,13 +597,17 @@ public final class Cloudipsp {
 
     private static void checkResponse(JSONObject response) throws java.lang.Exception {
         if (!response.getString("response_status").equals("success")) {
-            throw new Exception.Failure
-                    (
-                            response.getString("error_message"),
-                            response.getInt("error_code"),
-                            response.getString("request_id")
-                    );
+            handleResponseError(response);
         }
+    }
+
+    private static void handleResponseError(JSONObject response) throws java.lang.Exception {
+        throw new Exception.Failure
+                (
+                        response.getString("error_message"),
+                        response.getInt("error_code"),
+                        response.getString("request_id")
+                );
     }
 
     private void url3ds(Checkout checkout, final PayCallback callback) throws java.lang.Exception {
@@ -613,6 +651,16 @@ public final class Cloudipsp {
                         callback.onPaidProcessed(parseOrder(orderData));
                     }
                 }, callback);
+            }
+
+            @Override
+            public void onNetworkAccessError(String description) {
+                callback.onPaidFailure(new Exception.NetworkAccess(description));
+            }
+
+            @Override
+            public void onNetworkSecurityError(String description) {
+                callback.onPaidFailure(new Exception.NetworkSecurity(description));
             }
         });
 

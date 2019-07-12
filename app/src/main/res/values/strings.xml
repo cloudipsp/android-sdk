@@ -3,14 +3,16 @@
     <string name="app_name">cloudipsp.com demo</string>
     <string name="btn_simple_example">Simple Example</string>
     <string name="btn_flexible_example">Flexible Example</string>
-    <string name="btn_google_pay">Google Pay</string>
 
     <string name="lbl_amount">Amount:</string>
     <string name="lbl_ccy">Currency:</string>
     <string name="lbl_email">Email:</string>
     <string name="lbl_description">Description:</string>
-    <string name="btn_pay">Pay</string>
+    <string name="btn_pay_google">GooglePay</string>
+    <string name="btn_pay_card">Pay by Card</string>
     <string name="e_invalid_amount">Invalid amount</string>
     <string name="e_invalid_email">Invalid email</string>
     <string name="e_invalid_description">Enter description</string>
+    <string name="e_google_pay_unsupported">GooglePay is not supported</string>
+    <string name="e_google_pay_canceled">GooglePay has been canceled</string>
 </resources>
