@@ -23,9 +23,8 @@ android {
 }
 
 dependencies {
-    implementation project(':library')
 
     implementation 'com.google.android.gms:play-services-base:17.0.0'
     implementation 'com.google.android.gms:play-services-wallet:17.0.0'
-//    compile 'com.cloudipsp:android:+'
+    compile 'com.cloudipsp:android:+'
 }
