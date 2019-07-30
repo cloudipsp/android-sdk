@@ -73,6 +73,7 @@ public class Receipt implements Parcelable {
     public final String paymentSystem;
     public final VerificationStatus verificationStatus;
     public final String signature;
+    final String responseUrl;
 
     final JSONObject orderData;
 
@@ -104,6 +105,7 @@ public class Receipt implements Parcelable {
         paymentSystem = input.readString();
         verificationStatus = (VerificationStatus) input.readSerializable();
         signature = input.readString();
+        responseUrl = input.readString();
         try {
             orderData = new JSONObject(input.readString());
         } catch (JSONException e) {
@@ -117,7 +119,7 @@ public class Receipt implements Parcelable {
                     String recToken, Date recTokenLifeTime, int reversalAmount, int settlementAmount,
                     String settlementCurrency, Date settlementDate, int eci, int fee, int actualAmount,
                     String actualCurrency, String paymentSystem, VerificationStatus verificationStatus,
-                    String signature, JSONObject orderData) {
+                    String signature, String responseUrl, JSONObject orderData) {
         this.maskedCard = maskedCard;
         this.cardBin = cardBin;
         this.amount = amount;
@@ -145,6 +147,7 @@ public class Receipt implements Parcelable {
         this.paymentSystem = paymentSystem;
         this.verificationStatus = verificationStatus;
         this.signature = signature;
+        this.responseUrl = responseUrl;
         this.orderData = orderData;
     }
 
@@ -182,6 +185,7 @@ public class Receipt implements Parcelable {
         output.writeString(paymentSystem);
         output.writeSerializable(verificationStatus);
         output.writeString(signature);
+        output.writeString(responseUrl);
         output.writeString(orderData.toString());
     }
 }

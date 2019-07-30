@@ -84,17 +84,7 @@ public final class Cloudipsp {
     }
 
     public interface GooglePayCallback extends Callback {
-        void onGooglePayInitialized();
-    }
-
-    private static boolean isGooglePayRuntimeProvided() {
-        try {
-            Class.forName("com.google.android.gms.common.GoogleApiAvailability");
-            Class.forName("com.google.android.gms.wallet.PaymentDataRequest");
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
+        void onGooglePayInitialized(GooglePayCall result);
     }
 
     public static boolean supportsGooglePay(Context context) {
@@ -107,21 +97,107 @@ public final class Cloudipsp {
                 .isGooglePlayServicesAvailable(context) == ConnectionResult.SUCCESS;
     }
 
+    public void pay(final Card card, final Order order, PayCallback callback) {
+        if (!card.isValidCard()) {
+            throw new IllegalArgumentException("Card should be valid");
+        }
+
+        new PayTask(callback) {
+            @Override
+            public void runInTry() throws java.lang.Exception {
+                final String token = getToken(order, card);
+                final Checkout checkout = checkout(card, token, order.email, URL_CALLBACK);
+                payContinue(token, checkout, callback);
+            }
+        }.start();
+    }
+
+    public void payToken(final Card card, final String token, PayCallback callback) {
+        if (!card.isValidCard()) {
+            throw new IllegalArgumentException("Card should be valid");
+        }
+
+        new PayTask(callback) {
+            @Override
+            public void runInTry() throws java.lang.Exception {
+                final String callbackUrl = callbackUrl(token);
+                final Checkout checkout = checkout(card, token, null, callbackUrl);
+                payContinue(token, checkout, callback);
+            }
+        }.start();
+    }
+
+    private static boolean isGooglePayRuntimeProvided() {
+        try {
+            Class.forName("com.google.android.gms.common.GoogleApiAvailability");
+            Class.forName("com.google.android.gms.wallet.PaymentDataRequest");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+    public void googlePayInitialize(final String token,
+                                    final Activity activity,
+                                    final int requestCode,
+                                    final GooglePayCallback googlePayCallback) {
+        googlePayInitialize(activity, requestCode, googlePayCallback, new GooglePayMetaInfoProvider() {
+            @Override
+            public GooglePayMetaInfo getGooglePayMetaInfo() throws java.lang.Exception {
+                final Receipt receipt = order(token);
+                return new GooglePayMetaInfo(token, null, receipt.amount, receipt.currency, receipt.responseUrl);
+            }
+        });
+    }
+
     public void googlePayInitialize(final Order order,
                                     final Activity activity,
                                     final int requestCode,
                                     final GooglePayCallback googlePayCallback) {
+        googlePayInitialize(activity, requestCode, googlePayCallback, new GooglePayMetaInfoProvider() {
+            @Override
+            public GooglePayMetaInfo getGooglePayMetaInfo() throws java.lang.Exception {
+                return new GooglePayMetaInfo(null, order, order.amount, order.currency, URL_CALLBACK);
+            }
+        });
+    }
+
+    private static class GooglePayMetaInfo {
+        private final String token;
+        private final Order order;
+        private final int amount;
+        private final String currency;
+        private final String callbackUrl;
+
+        private GooglePayMetaInfo(String token, Order order, int amount, String currency, String callbackUrl) {
+            this.token = token;
+            this.order = order;
+            this.amount = amount;
+            this.currency = currency;
+            this.callbackUrl = callbackUrl;
+        }
+    }
+
+    private interface GooglePayMetaInfoProvider {
+        GooglePayMetaInfo getGooglePayMetaInfo() throws java.lang.Exception;
+    }
+
+    private void googlePayInitialize(final Activity activity,
+                                     final int requestCode,
+                                     final GooglePayCallback googlePayCallback,
+                                     final GooglePayMetaInfoProvider metaInfoProvider) {
+
         if (!isGooglePayRuntimeProvided()) {
             return;
         }
 
         new Task<GooglePayCallback>(new GooglePayCallback() {
             @Override
-            public void onGooglePayInitialized() {
+            public void onGooglePayInitialized(final GooglePayCall result) {
                 sMain.post(new Runnable() {
                     @Override
                     public void run() {
-                        googlePayCallback.onGooglePayInitialized();
+                        googlePayCallback.onGooglePayInitialized(result);
                     }
                 });
             }
@@ -138,8 +214,9 @@ public final class Cloudipsp {
         }) {
             @Override
             public void runInTry() throws java.lang.Exception {
-                final JSONObject googlePayConfig = googlePayMerchantConfig(order);
-                final JSONObject allowedPaymentMethod = googlePayConfig
+                final GooglePayMetaInfo metaInfo = metaInfoProvider.getGooglePayMetaInfo();
+                final GooglePayMerchantConfig googlePayConfig = googlePayMerchantConfig(metaInfo.currency);
+                final JSONObject allowedPaymentMethod = googlePayConfig.data
                         .getJSONArray("allowedPaymentMethods")
                         .getJSONObject(0);
                 final JSONObject tokenizationSpecification = allowedPaymentMethod.getJSONObject("tokenizationSpecification");
@@ -148,8 +225,8 @@ public final class Cloudipsp {
                         .setTransactionInfo(
                                 TransactionInfo.newBuilder()
                                         .setTotalPriceStatus(WalletConstants.TOTAL_PRICE_STATUS_FINAL)
-                                        .setTotalPrice(new BigDecimal(order.amount).setScale(2).toString())
-                                        .setCurrencyCode(order.currency)
+                                        .setTotalPrice(new BigDecimal(metaInfo.amount).setScale(2).toString())
+                                        .setCurrencyCode(metaInfo.currency)
                                         .build())
                         .addAllowedPaymentMethod(WalletConstants.PAYMENT_METHOD_CARD)
                         .addAllowedPaymentMethod(WalletConstants.PAYMENT_METHOD_TOKENIZED_CARD)
@@ -172,51 +249,72 @@ public final class Cloudipsp {
                 final PaymentsClient paymentsClient = Wallet.getPaymentsClient(activity,
                         new Wallet.WalletOptions.Builder()
                                 .setEnvironment(
-                                        googlePayConfig.getString("environment").equals("FIRE")
+                                        googlePayConfig.data.getString("environment").equals("FIRE")
                                                 ? WalletConstants.ENVIRONMENT_TEST
                                                 : WalletConstants.ENVIRONMENT_PRODUCTION
                                 )
                                 .build());
+
+                callback.onGooglePayInitialized(new GooglePayCall(
+                        metaInfo.token,
+                        metaInfo.order,
+                        metaInfo.callbackUrl,
+                        googlePayConfig.paymentSystem
+                ));
+
                 AutoResolveHelper.resolveTask(
                         paymentsClient.loadPaymentData(request),
                         activity,
                         requestCode);
             }
         }.start();
-
-
     }
 
-    private JSONObject googlePayMerchantConfig(Order order) throws java.lang.Exception {
+    private static class GooglePayMerchantConfig {
+        public final String paymentSystem;
+        public final JSONObject data;
+
+        private GooglePayMerchantConfig(String paymentSystem, JSONObject data) {
+            this.paymentSystem = paymentSystem;
+            this.data = data;
+        }
+    }
+
+    private GooglePayMerchantConfig googlePayMerchantConfig(String currency) throws java.lang.Exception {
         final TreeMap<String, Object> mobilePayRequest = new TreeMap<>();
         mobilePayRequest.put("merchant_id", merchantId);
-        mobilePayRequest.put("currency", order.currency);
+        mobilePayRequest.put("currency", currency);
 
         final JSONObject mobilePayResponse = callJson("/api/checkout/ajax/mobile_pay", mobilePayRequest);
         if (mobilePayResponse.has("error_message")) {
             handleResponseError(mobilePayResponse);
         }
-        order.paymentSystem = mobilePayResponse.getString("payment_system");
+        final String paymentSystem = mobilePayResponse.getString("payment_system");
 
         final JSONArray methodsJson = mobilePayResponse.getJSONArray("methods");
+        JSONObject data = null;
         for (int i = methodsJson.length() - 1; i >= 0; --i) {
             final JSONObject methodJson = methodsJson.getJSONObject(i);
             if ("https://google.com/pay".equals(methodJson.getString("supportedMethods"))) {
-                return methodJson.getJSONObject("data");
+                data = methodJson.getJSONObject("data");
+                break;
             }
         }
-        throw new Exception.GooglePayUnsupported();
+        if (data == null) {
+            throw new Exception.GooglePayUnsupported();
+        }
+        return new GooglePayMerchantConfig(paymentSystem, data);
     }
 
-    public boolean googlePayComplete(int resultCode, Intent data, final Order order, PayCallback payCallback) {
+    public boolean googlePayComplete(int resultCode, Intent data, final GooglePayCall googlePayCall, PayCallback payCallback) {
         if (Activity.RESULT_CANCELED == resultCode) {
             return false;
         }
         if (data == null) {
             throw new NullPointerException("data should be not null");
         }
-        if (order == null) {
-            throw new NullPointerException("order should be not null");
+        if (googlePayCall == null) {
+            throw new NullPointerException("googlePayCall should be not null");
         }
         if (payCallback == null) {
             throw new NullPointerException("payCallback should be not null");
@@ -226,9 +324,26 @@ public final class Cloudipsp {
             new PayTask(payCallback) {
                 @Override
                 public void runInTry() throws java.lang.Exception {
-                    final String token = getToken(order, null);
-                    final Checkout checkout = checkoutGooglePay(token, order, paymentData);
-                    payContinue(token, checkout, callback);
+                    if (googlePayCall.order != null) {
+                        final String token = getToken(googlePayCall.order, null);
+                        final Checkout checkout = checkoutGooglePay(
+                                token,
+                                googlePayCall.paymentSystem,
+                                googlePayCall.order.email,
+                                googlePayCall.callbackUrl,
+                                paymentData
+                        );
+                        payContinue(token, checkout, callback);
+                    } else if (googlePayCall.token != null) {
+                        final Checkout checkout = checkoutGooglePay(
+                                googlePayCall.token,
+                                googlePayCall.paymentSystem,
+                                null,
+                                googlePayCall.callbackUrl,
+                                paymentData
+                        );
+                        payContinue(googlePayCall.token, checkout, callback);
+                    }
                 }
             }.start();
         } else if (AutoResolveHelper.RESULT_ERROR == resultCode) {
@@ -236,35 +351,6 @@ public final class Cloudipsp {
             payCallback.onPaidFailure(new Exception.GooglePayFailure(status));
         }
         return true;
-    }
-
-    public void pay(final Card card, final Order order, PayCallback callback) {
-        if (!card.isValidCard()) {
-            throw new IllegalArgumentException("Card should be valid");
-        }
-
-        new PayTask(callback) {
-            @Override
-            public void runInTry() throws java.lang.Exception {
-                final String token = getToken(order, card);
-                final Checkout checkout = checkout(card, token, order.email);
-                payContinue(token, checkout, callback);
-            }
-        }.start();
-    }
-
-    public void payToken(final Card card, final String token, PayCallback callback) {
-        if (!card.isValidCard()) {
-            throw new IllegalArgumentException("Card should be valid");
-        }
-
-        new PayTask(callback) {
-            @Override
-            public void runInTry() throws java.lang.Exception {
-                final Checkout checkout = checkout(card, token, null);
-                payContinue(token, checkout, callback);
-            }
-        }.start();
     }
 
     private interface RunInTry {
@@ -389,11 +475,13 @@ public final class Cloudipsp {
         final SendData sendData;
         final String url;
         final int action;
+        final String callbackUrl;
 
-        private Checkout(SendData sendData, String url, int action) {
+        private Checkout(SendData sendData, String url, int action, String callbackUrl) {
             this.sendData = sendData;
             this.url = url;
             this.action = action;
+            this.callbackUrl = callbackUrl;
         }
 
         private static class SendData {
@@ -409,7 +497,7 @@ public final class Cloudipsp {
         }
     }
 
-    private static Checkout checkout(Card card, String token, String email) throws java.lang.Exception {
+    private static Checkout checkout(Card card, String token, String email, String callbackUrl) throws java.lang.Exception {
         final TreeMap<String, Object> request = new TreeMap<>();
         request.put("card_number", card.cardNumber);
         if (card.source == Card.SOURCE_FORM) {
@@ -421,49 +509,16 @@ public final class Cloudipsp {
         if (email != null) {
             request.put("email", email);
         }
-
-        final JSONObject response = call("/api/checkout/ajax", request);
-        final String url = response.getString("url");
-        if (URL_CALLBACK.equals(url)) {
-            return new Checkout(null, url, Checkout.WITHOUT_3DS);
-        } else {
-            final JSONObject sendData = response.getJSONObject("send_data");
-
-            return new Checkout
-                    (
-                            new Checkout.SendData
-                                    (
-                                            sendData.getString("MD"),
-                                            sendData.getString("PaReq"),
-                                            sendData.getString("TermUrl")
-                                    ),
-                            url,
-                            Checkout.WITH_3DS
-                    );
-        }
+        return checkoutContinue(request, callbackUrl);
     }
 
-    private void payContinue(final String token, final Checkout checkout, final PayCallback callback) throws java.lang.Exception {
-        final RunInTry orderChecker = new RunInTry() {
-            @Override
-            public void runInTry() throws java.lang.Exception {
-                final Receipt receipt = order(token);
-                callback.onPaidProcessed(receipt);
-            }
-        };
-
-        if (checkout.action == Checkout.WITHOUT_3DS) {
-            Cloudipsp.runInTry(orderChecker, callback);
-        } else {
-            url3ds(checkout, callback);
-        }
-    }
-
-    private static Checkout checkoutGooglePay(String token, Order order, PaymentData paymentData) throws java.lang.Exception {
+    private static Checkout checkoutGooglePay(String token, String paymentSystem,
+                                              String email, String callbackUrl,
+                                              PaymentData paymentData) throws java.lang.Exception {
         final TreeMap<String, Object> request = new TreeMap<>();
-        request.put("payment_system", order.paymentSystem);
+        request.put("payment_system", paymentSystem);
         request.put("token", token);
-        request.put("email", order.email);
+        request.put("email", email);
 
         final JSONObject data = new JSONObject();
         data.put("apiVersion", "1");
@@ -485,10 +540,14 @@ public final class Cloudipsp {
         data.put("paymentMethodData", paymentMethodData);
         request.put("data", data);
 
+        return checkoutContinue(request, callbackUrl);
+    }
+
+    private static Checkout checkoutContinue(TreeMap<String, Object> request, String callbackUrl) throws java.lang.Exception {
         final JSONObject response = call("/api/checkout/ajax", request);
         final String url = response.getString("url");
-        if (URL_CALLBACK.equals(url)) {
-            return new Checkout(null, url, Checkout.WITHOUT_3DS);
+        if (callbackUrl.equals(url)) {
+            return new Checkout(null, url, Checkout.WITHOUT_3DS, callbackUrl);
         } else {
             final JSONObject sendData = response.getJSONObject("send_data");
 
@@ -501,19 +560,44 @@ public final class Cloudipsp {
                                             sendData.getString("TermUrl")
                                     ),
                             url,
-                            Checkout.WITH_3DS
+                            Checkout.WITH_3DS,
+                            callbackUrl
                     );
+        }
+    }
+
+    private void payContinue(final String token, final Checkout checkout, final PayCallback callback) throws java.lang.Exception {
+        final RunInTry orderChecker = new RunInTry() {
+            @Override
+            public void runInTry() throws java.lang.Exception {
+                final Receipt receipt = order(token);
+                callback.onPaidProcessed(receipt);
+            }
+        };
+
+        if (checkout.action == Checkout.WITHOUT_3DS) {
+            Cloudipsp.runInTry(orderChecker, callback);
+        } else {
+            url3ds(token, checkout, callback);
         }
     }
 
     private static Receipt order(String token) throws java.lang.Exception {
         final TreeMap<String, Object> request = new TreeMap<>();
         request.put("token", token);
-        final JSONObject orderData = call("/api/checkout/merchant/order", request).getJSONObject("order_data");
-        return parseOrder(orderData);
+        final JSONObject response = call("/api/checkout/merchant/order", request);
+        final JSONObject orderData = response.getJSONObject("order_data");
+        return parseOrder(orderData, response.getString("response_url"));
     }
 
-    private static Receipt parseOrder(JSONObject orderData) throws JSONException {
+    private static String callbackUrl(String token) throws java.lang.Exception {
+        final TreeMap<String, Object> request = new TreeMap<>();
+        request.put("token", token);
+        final JSONObject response = call("/api/checkout/merchant/order", request);
+        return response.getString("response_url");
+    }
+
+    private static Receipt parseOrder(JSONObject orderData, String responseUrl) throws JSONException {
         Card.Type cardType;
         try {
             cardType = Card.Type.valueOf(orderData.getString("card_type").toUpperCase());
@@ -571,6 +655,7 @@ public final class Cloudipsp {
                         orderData.optString("payment_system"),
                         verificationStatusEnum,
                         orderData.getString("signature"),
+                        responseUrl,
                         orderData
                 );
     }
@@ -610,7 +695,7 @@ public final class Cloudipsp {
                 );
     }
 
-    private void url3ds(Checkout checkout, final PayCallback callback) throws java.lang.Exception {
+    private void url3ds(final String token, final Checkout checkout, final PayCallback callback) throws java.lang.Exception {
         final String htmlPageContent;
         final String[] contentType = new String[1];
         final ResponseInterceptor interceptor = new ResponseInterceptor() {
@@ -637,32 +722,47 @@ public final class Cloudipsp {
             contentType[0] = "text/html";
         }
 
-        final CloudipspView.PayConfirmation confirmation = new CloudipspView.PayConfirmation(htmlPageContent, contentType[0], checkout.url, new CloudipspView.PayConfirmation.Listener() {
-            @Override
-            public void onConfirmed(final JSONObject response) {
-                runInTry(new RunInTry() {
+        final CloudipspView.PayConfirmation confirmation = new CloudipspView.PayConfirmation(
+                htmlPageContent,
+                contentType[0],
+                checkout.url,
+                checkout.callbackUrl,
+                HOST,
+                new CloudipspView.PayConfirmation.Listener() {
                     @Override
-                    public void runInTry() throws java.lang.Exception {
-                        if (!response.getString("url").equals(URL_CALLBACK)) {
-                            throw new java.lang.Exception();
-                        }
-                        final JSONObject orderData = response.getJSONObject("params");
-                        checkResponse(orderData);
-                        callback.onPaidProcessed(parseOrder(orderData));
+                    public void onConfirmed(final JSONObject response) {
+                        runInTry(new RunInTry() {
+                            @Override
+                            public void runInTry() throws java.lang.Exception {
+                                if (response == null) {
+                                    new Task<PayCallback>(callback) {
+                                        @Override
+                                        public void runInTry() throws java.lang.Exception {
+                                            callback.onPaidProcessed(order(token));
+                                        }
+                                    }.start();
+                                } else {
+                                    if (!response.getString("url").equals(checkout.callbackUrl)) {
+                                        throw new java.lang.Exception();
+                                    }
+                                    final JSONObject orderData = response.getJSONObject("params");
+                                    checkResponse(orderData);
+                                    callback.onPaidProcessed(parseOrder(orderData, null));
+                                }
+                            }
+                        }, callback);
                     }
-                }, callback);
-            }
 
-            @Override
-            public void onNetworkAccessError(String description) {
-                callback.onPaidFailure(new Exception.NetworkAccess(description));
-            }
+                    @Override
+                    public void onNetworkAccessError(String description) {
+                        callback.onPaidFailure(new Exception.NetworkAccess(description));
+                    }
 
-            @Override
-            public void onNetworkSecurityError(String description) {
-                callback.onPaidFailure(new Exception.NetworkSecurity(description));
-            }
-        });
+                    @Override
+                    public void onNetworkSecurityError(String description) {
+                        callback.onPaidFailure(new Exception.NetworkSecurity(description));
+                    }
+                });
 
         sMain.post(new Runnable() {
             @Override

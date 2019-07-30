@@ -15,6 +15,7 @@ import com.cloudipsp.android.Card;
 import com.cloudipsp.android.Cloudipsp;
 import com.cloudipsp.android.CloudipspWebView;
 import com.cloudipsp.android.Currency;
+import com.cloudipsp.android.GooglePayCall;
 import com.cloudipsp.android.Order;
 import com.cloudipsp.android.Receipt;
 
@@ -27,7 +28,7 @@ abstract public class BaseExampleActivity extends Activity implements
         Cloudipsp.PayCallback,
         Cloudipsp.GooglePayCallback {
     private static final int RC_GOOGLE_PAY = 100500;
-    private static final String K_GOOGLE_PAY_ORDER = "google_pay_order";
+    private static final String K_GOOGLE_PAY_CALL = "google_pay_call";
 
     private EditText editAmount;
     private Spinner spinnerCcy;
@@ -36,7 +37,7 @@ abstract public class BaseExampleActivity extends Activity implements
     private CloudipspWebView webView;
 
     private Cloudipsp cloudipsp;
-    private Order googlePayOrder;// <- this should be serialized on saving instance state
+    private GooglePayCall googlePayCall;// <- this should be serialized on saving instance state
 
     protected abstract int getLayoutResId();
 
@@ -61,14 +62,14 @@ abstract public class BaseExampleActivity extends Activity implements
         spinnerCcy.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, Currency.values()));
 
         if (savedInstanceState != null) {
-            googlePayOrder = savedInstanceState.getParcelable(K_GOOGLE_PAY_ORDER);
+            googlePayCall = savedInstanceState.getParcelable(K_GOOGLE_PAY_CALL);
         }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelable(K_GOOGLE_PAY_ORDER, googlePayOrder);
+        outState.putParcelable(K_GOOGLE_PAY_CALL, googlePayCall);
     }
 
     @Override
@@ -86,7 +87,7 @@ abstract public class BaseExampleActivity extends Activity implements
 
         switch (requestCode) {
             case RC_GOOGLE_PAY:
-                if (!cloudipsp.googlePayComplete(resultCode, data, googlePayOrder, this)) {
+                if (!cloudipsp.googlePayComplete(resultCode, data, googlePayCall, this)) {
                     Toast.makeText(this, R.string.e_google_pay_canceled, Toast.LENGTH_LONG).show();
                 }
                 break;
@@ -126,7 +127,7 @@ abstract public class BaseExampleActivity extends Activity implements
 
     private void processGooglePay() {
         if (Cloudipsp.supportsGooglePay(this)) {
-            googlePayOrder = createOrder();
+            final Order googlePayOrder = createOrder();
             if (googlePayOrder != null) {
                 cloudipsp.googlePayInitialize(googlePayOrder, this, RC_GOOGLE_PAY, this);
             }
@@ -189,6 +190,7 @@ abstract public class BaseExampleActivity extends Activity implements
     }
 
     @Override
-    public void onGooglePayInitialized() {
+    public void onGooglePayInitialized(GooglePayCall result) {
+        this.googlePayCall = result;
     }
 }
