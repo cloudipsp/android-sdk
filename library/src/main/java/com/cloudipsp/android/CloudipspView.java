@@ -8,16 +8,20 @@ import org.json.JSONObject;
 public interface CloudipspView {
     void confirm(PayConfirmation confirmation);
 
-    public static final class PayConfirmation {
+    final class PayConfirmation {
         final String htmlPageContent;
         final String contentType;
         final String url;
+        final String callbackUrl;
+        final String host;
         final Listener listener;
 
-        PayConfirmation(String htmlPageContent, String contentType, String url, Listener listener) {
+        PayConfirmation(String htmlPageContent, String contentType, String url, String callbackUrl, String host, Listener listener) {
             this.htmlPageContent = htmlPageContent;
             this.contentType = contentType;
             this.url = url;
+            this.callbackUrl = callbackUrl;
+            this.host = host;
             this.listener = listener;
         }
 

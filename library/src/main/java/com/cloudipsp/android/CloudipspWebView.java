@@ -2,6 +2,7 @@ package com.cloudipsp.android;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
@@ -73,21 +74,55 @@ public class CloudipspWebView extends WebView implements CloudipspView {
         setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                if (checkUrl(url)) {
+                    return true;
+                }
+                return super.shouldOverrideUrlLoading(view, url);
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    if (checkUrl(request.getUrl().toString())) {
+                        return true;
+                    }
+                }
+                return super.shouldOverrideUrlLoading(view, request);
+            }
+
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                checkUrl(url);
+            }
+
+            private boolean checkUrl(String url) {
                 if (BuildConfig.DEBUG) {
                     Log.i("Cloudipsp", "WebUrl: " + url);
                 }
-                if (url.startsWith(URL_START_PATTERN)) {
+                boolean detectsStartPattern = url.startsWith(URL_START_PATTERN);
+                boolean detectsCallbackUrl = false;
+                boolean detectsApiToken = false;
+                if (!detectsStartPattern) {
+                    detectsCallbackUrl = url.startsWith(confirmation.callbackUrl);
+                    if (!detectsCallbackUrl) {
+                        detectsApiToken = url.startsWith(confirmation.host + "/api?token=");
+                    }
+                }
+
+                if (detectsStartPattern || detectsCallbackUrl || detectsApiToken) {
                     blankPage();
 
-                    final String jsonOfConfirmation = url.split(URL_START_PATTERN)[1];
-                    JSONObject response;
-                    try {
-                        response = new JSONObject(jsonOfConfirmation);
-                    } catch (JSONException jsonException) {
+                    JSONObject response = null;
+                    if (detectsStartPattern) {
+                        final String jsonOfConfirmation = url.split(URL_START_PATTERN)[1];
                         try {
-                            response = new JSONObject(URLDecoder.decode(jsonOfConfirmation, "UTF-8"));
-                        } catch (Exception e) {
-                            response = null;
+                            response = new JSONObject(jsonOfConfirmation);
+                        } catch (JSONException jsonException) {
+                            try {
+                                response = new JSONObject(URLDecoder.decode(jsonOfConfirmation, "UTF-8"));
+                            } catch (Exception e) {
+                                response = null;
+                            }
                         }
                     }
                     confirmation.listener.onConfirmed(response);
@@ -95,7 +130,7 @@ public class CloudipspWebView extends WebView implements CloudipspView {
                     setVisibility(View.GONE);
                     return true;
                 } else {
-                    return super.shouldOverrideUrlLoading(view, url);
+                    return false;
                 }
             }
 
