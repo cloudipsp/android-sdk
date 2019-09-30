@@ -14,14 +14,16 @@ public interface CloudipspView {
         final String url;
         final String callbackUrl;
         final String host;
+        final String cookie;
         final Listener listener;
 
-        PayConfirmation(String htmlPageContent, String contentType, String url, String callbackUrl, String host, Listener listener) {
+        PayConfirmation(String htmlPageContent, String contentType, String url, String callbackUrl, String host, String cookie, Listener listener) {
             this.htmlPageContent = htmlPageContent;
             this.contentType = contentType;
             this.url = url;
             this.callbackUrl = callbackUrl;
             this.host = host;
+            this.cookie = cookie;
             this.listener = listener;
         }
 

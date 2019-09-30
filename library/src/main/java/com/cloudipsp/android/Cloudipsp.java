@@ -41,7 +41,9 @@ import java.security.cert.CertPathValidatorException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeMap;
 
@@ -696,7 +698,7 @@ public final class Cloudipsp {
     }
 
     private void url3ds(final String token, final Checkout checkout, final PayCallback callback) throws java.lang.Exception {
-        final String htmlPageContent;
+        final Rs rs;
         final String[] contentType = new String[1];
         final ResponseInterceptor interceptor = new ResponseInterceptor() {
             @Override
@@ -709,25 +711,26 @@ public final class Cloudipsp {
             sendData.put("MD", checkout.sendData.md);
             sendData.put("PaReq", checkout.sendData.paReq);
             sendData.put("TermUrl", checkout.sendData.termUrl);
-            htmlPageContent = call(checkout.url, sendData.toString(), "application/json", interceptor);
+            rs = callRaw(checkout.url, sendData.toString(), "application/json", interceptor);
         } else {
             final String urlEncoded =
                     "MD=" + URLEncoder.encode(checkout.sendData.md, "UTF-8") + "&" +
                             "PaReq=" + URLEncoder.encode(checkout.sendData.paReq, "UTF-8") + "&" +
                             "TermUrl=" + URLEncoder.encode(checkout.sendData.termUrl, "UTF-8");
 
-            htmlPageContent = call(checkout.url, urlEncoded, "application/x-www-form-urlencoded", interceptor);
+            rs = callRaw(checkout.url, urlEncoded, "application/x-www-form-urlencoded", interceptor);
         }
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR1 || TextUtils.isEmpty(contentType[0])) {
             contentType[0] = "text/html";
         }
 
         final CloudipspView.PayConfirmation confirmation = new CloudipspView.PayConfirmation(
-                htmlPageContent,
+                rs.content,
                 contentType[0],
                 checkout.url,
                 checkout.callbackUrl,
                 HOST,
+                rs.cookie,
                 new CloudipspView.PayConfirmation.Listener() {
                     @Override
                     public void onConfirmed(final JSONObject response) {
@@ -781,6 +784,10 @@ public final class Cloudipsp {
     }
 
     private static String call(String url, String content, String contentType, ResponseInterceptor responseInterceptor) throws java.lang.Exception {
+        return callRaw(url, content, contentType, responseInterceptor).content;
+    }
+
+    private static Rs callRaw(String url, String content, String contentType, ResponseInterceptor responseInterceptor) throws java.lang.Exception {
         final HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
         if (connection instanceof HttpsURLConnection) {
             final HttpsURLConnection secureConnection = (HttpsURLConnection) connection;
@@ -816,12 +823,21 @@ public final class Cloudipsp {
             if (responseInterceptor != null) {
                 responseInterceptor.onIntercept(connection);
             }
+            final Rs rs = new Rs();
+
             final StringBuilder sb = new StringBuilder(contentLength);
             readAll(connection.getInputStream(), sb);
-            return sb.toString();
+            rs.cookie = connection.getHeaderField("Set-Cookie");
+            rs.content = sb.toString();
+            return rs;
         } finally {
             connection.disconnect();
         }
+    }
+
+    private static class Rs {
+        public String content;
+        public String cookie;
     }
 
     private static void readAll(InputStream from, StringBuilder to) throws IOException {
