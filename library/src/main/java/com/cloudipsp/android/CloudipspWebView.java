@@ -12,6 +12,7 @@ import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.SslErrorHandler;
+import android.webkit.ValueCallback;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
@@ -52,6 +53,7 @@ public class CloudipspWebView extends WebView implements CloudipspView {
         settings.setDomStorageEnabled(true);
         settings.setLoadsImagesAutomatically(true);
         settings.setAllowFileAccess(false);
+        settings.setDatabaseEnabled(true);
 
         setVisibility(View.GONE);
     }
@@ -177,7 +179,23 @@ public class CloudipspWebView extends WebView implements CloudipspView {
         if (Tls12SocketFactory.needHere()) {
             loadProxy(confirmation);
         } else {
-            loadDataWithBaseURL(confirmation.url, confirmation.htmlPageContent, confirmation.contentType, encoding(confirmation.contentType), null);
+            final Runnable l = new Runnable() {
+                @Override
+                public void run() {
+                    loadDataWithBaseURL(confirmation.url, confirmation.htmlPageContent, confirmation.contentType, encoding(confirmation.contentType), null);
+                }
+            };
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && confirmation.cookie != null) {
+                CookieManager.getInstance().setCookie(confirmation.url, confirmation.cookie, new ValueCallback<Boolean>() {
+                    @Override
+                    public void onReceiveValue(Boolean value) {
+                        l.run();
+                    }
+                });
+            } else {
+                l.run();
+            }
         }
     }
 
