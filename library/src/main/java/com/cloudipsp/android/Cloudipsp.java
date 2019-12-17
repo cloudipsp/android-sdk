@@ -231,20 +231,17 @@ public final class Cloudipsp {
                                         .setCurrencyCode(metaInfo.currency)
                                         .build())
                         .addAllowedPaymentMethod(WalletConstants.PAYMENT_METHOD_CARD)
-                        .addAllowedPaymentMethod(WalletConstants.PAYMENT_METHOD_TOKENIZED_CARD)
                         .setCardRequirements(
                                 CardRequirements.newBuilder()
                                         .addAllowedCardNetworks(Arrays.asList(
-                                                WalletConstants.CARD_NETWORK_AMEX,
-                                                WalletConstants.CARD_NETWORK_DISCOVER,
                                                 WalletConstants.CARD_NETWORK_VISA,
                                                 WalletConstants.CARD_NETWORK_MASTERCARD))
                                         .build())
                         .setPaymentMethodTokenizationParameters(PaymentMethodTokenizationParameters.newBuilder()
                                 .setPaymentMethodTokenizationType(
-                                        WalletConstants.PAYMENT_METHOD_TOKENIZATION_TYPE_DIRECT)
-                                .addParameter("protocolVersion", tokenizationSpecification.getJSONObject("parameters").getString("protocolVersion"))
-                                .addParameter("publicKey", tokenizationSpecification.getJSONObject("parameters").getString("publicKey"))
+                                        WalletConstants.PAYMENT_METHOD_TOKENIZATION_TYPE_PAYMENT_GATEWAY)
+                                .addParameter("gatewayMerchantId", tokenizationSpecification.getJSONObject("parameters").getString("gatewayMerchantId"))
+                                .addParameter("gateway", tokenizationSpecification.getJSONObject("parameters").getString("gateway"))
                                 .build())
                         .build();
 
@@ -252,8 +249,8 @@ public final class Cloudipsp {
                         new Wallet.WalletOptions.Builder()
                                 .setEnvironment(
                                         googlePayConfig.data.getString("environment").equals("FIRE")
-                                                ? WalletConstants.ENVIRONMENT_TEST
-                                                : WalletConstants.ENVIRONMENT_PRODUCTION
+                                                ? WalletConstants.ENVIRONMENT_PRODUCTION
+                                                : WalletConstants.ENVIRONMENT_TEST
                                 )
                                 .build());
 
