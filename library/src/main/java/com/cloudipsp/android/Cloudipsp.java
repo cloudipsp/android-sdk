@@ -247,10 +247,9 @@ public final class Cloudipsp {
 
                 final PaymentsClient paymentsClient = Wallet.getPaymentsClient(activity,
                         new Wallet.WalletOptions.Builder()
-                                .setEnvironment(
-                                        googlePayConfig.data.getString("environment").equals("FIRE")
-                                                ? WalletConstants.ENVIRONMENT_PRODUCTION
-                                                : WalletConstants.ENVIRONMENT_TEST
+                                .setEnvironment(googlePayConfig.data.getString("environment").equals("PRODUCTION")
+                                        ? WalletConstants.ENVIRONMENT_PRODUCTION
+                                        : WalletConstants.ENVIRONMENT_TEST
                                 )
                                 .build());
 
