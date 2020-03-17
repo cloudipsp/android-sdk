@@ -217,33 +217,8 @@ public final class Cloudipsp {
             @Override
             public void runInTry() throws java.lang.Exception {
                 final GooglePayMetaInfo metaInfo = metaInfoProvider.getGooglePayMetaInfo();
-                final GooglePayMerchantConfig googlePayConfig = googlePayMerchantConfig(metaInfo.currency);
-                final JSONObject allowedPaymentMethod = googlePayConfig.data
-                        .getJSONArray("allowedPaymentMethods")
-                        .getJSONObject(0);
-                final JSONObject tokenizationSpecification = allowedPaymentMethod.getJSONObject("tokenizationSpecification");
-
-                final PaymentDataRequest request = PaymentDataRequest.newBuilder()
-                        .setTransactionInfo(
-                                TransactionInfo.newBuilder()
-                                        .setTotalPriceStatus(WalletConstants.TOTAL_PRICE_STATUS_FINAL)
-                                        .setTotalPrice(new BigDecimal(metaInfo.amount).setScale(2).toString())
-                                        .setCurrencyCode(metaInfo.currency)
-                                        .build())
-                        .addAllowedPaymentMethod(WalletConstants.PAYMENT_METHOD_CARD)
-                        .setCardRequirements(
-                                CardRequirements.newBuilder()
-                                        .addAllowedCardNetworks(Arrays.asList(
-                                                WalletConstants.CARD_NETWORK_VISA,
-                                                WalletConstants.CARD_NETWORK_MASTERCARD))
-                                        .build())
-                        .setPaymentMethodTokenizationParameters(PaymentMethodTokenizationParameters.newBuilder()
-                                .setPaymentMethodTokenizationType(
-                                        WalletConstants.PAYMENT_METHOD_TOKENIZATION_TYPE_PAYMENT_GATEWAY)
-                                .addParameter("gatewayMerchantId", tokenizationSpecification.getJSONObject("parameters").getString("gatewayMerchantId"))
-                                .addParameter("gateway", tokenizationSpecification.getJSONObject("parameters").getString("gateway"))
-                                .build())
-                        .build();
+                final GooglePayMerchantConfig googlePayConfig = googlePayMerchantConfig(metaInfo);
+                final PaymentDataRequest request = PaymentDataRequest.fromJson(googlePayConfig.data.toString());
 
                 final PaymentsClient paymentsClient = Wallet.getPaymentsClient(activity,
                         new Wallet.WalletOptions.Builder()
@@ -278,10 +253,15 @@ public final class Cloudipsp {
         }
     }
 
-    private GooglePayMerchantConfig googlePayMerchantConfig(String currency) throws java.lang.Exception {
+    private GooglePayMerchantConfig googlePayMerchantConfig(GooglePayMetaInfo metaInfo) throws java.lang.Exception {
         final TreeMap<String, Object> mobilePayRequest = new TreeMap<>();
         mobilePayRequest.put("merchant_id", merchantId);
-        mobilePayRequest.put("currency", currency);
+        if (metaInfo.token == null) {
+            mobilePayRequest.put("amount", metaInfo.amount);
+            mobilePayRequest.put("currency", metaInfo.currency);
+        } else {
+            mobilePayRequest.put("token", metaInfo.token);
+        }
 
         final JSONObject mobilePayResponse = callJson("/api/checkout/ajax/mobile_pay", mobilePayRequest);
         if (mobilePayResponse.has("error_message")) {
@@ -518,24 +498,7 @@ public final class Cloudipsp {
         request.put("token", token);
         request.put("email", email);
 
-        final JSONObject data = new JSONObject();
-        data.put("apiVersion", "1");
-        data.put("apiVersionMinor", "1");
-        final JSONObject paymentMethodData = new JSONObject();
-        final CardInfo cardInfo = paymentData.getCardInfo();
-        paymentMethodData.put("description", cardInfo.getCardDescription());
-        paymentMethodData.put("type", "CARD");
-        final JSONObject info = new JSONObject();
-        info.put("cardDetails", cardInfo.getCardDetails());
-        info.put("cardNetwork", cardInfo.getCardNetwork());
-
-        paymentMethodData.put("info", info);
-        final JSONObject tokenizationData = new JSONObject();
-        tokenizationData.put("type", "DIRECT");
-        tokenizationData.put("token", paymentData.getPaymentMethodToken().getToken());
-
-        paymentMethodData.put("tokenizationData", tokenizationData);
-        data.put("paymentMethodData", paymentMethodData);
+        final JSONObject data = new JSONObject(paymentData.toJson());
         request.put("data", data);
 
         return checkoutContinue(request, callbackUrl);
