@@ -107,7 +107,7 @@ public class CloudipspWebView extends WebView implements CloudipspView {
                 if (!detectsStartPattern) {
                     detectsCallbackUrl = url.startsWith(confirmation.callbackUrl);
                     if (!detectsCallbackUrl) {
-                        detectsApiToken = url.startsWith(confirmation.host + "/api?token=");
+                        detectsApiToken = url.startsWith(confirmation.host + "/api/checkout?token=");
                     }
                 }
 

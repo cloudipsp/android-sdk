@@ -7,7 +7,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
-import android.util.Base64;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -614,14 +613,8 @@ public final class Cloudipsp {
     }
 
     private static JSONObject call(String path, TreeMap<String, Object> request) throws java.lang.Exception {
-        JSONObject json = callJson(path, request);
-        if ("2.0".equals(json.optString("version"))) {
-            final byte[] jsonBytes = Base64.decode(json.getString("data"), Base64.DEFAULT);
-            //noinspection CharsetObjectCanBeUsed
-            json = new JSONObject(new String(jsonBytes, "UTF-8"));
-        } else {
-            checkResponse(json);
-        }
+        final JSONObject json = callJson(path, request);
+        checkResponse(json);
         return json;
     }
 
