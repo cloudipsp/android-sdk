@@ -7,19 +7,16 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.wallet.AutoResolveHelper;
-import com.google.android.gms.wallet.CardInfo;
-import com.google.android.gms.wallet.CardRequirements;
 import com.google.android.gms.wallet.PaymentData;
 import com.google.android.gms.wallet.PaymentDataRequest;
-import com.google.android.gms.wallet.PaymentMethodTokenizationParameters;
 import com.google.android.gms.wallet.PaymentsClient;
-import com.google.android.gms.wallet.TransactionInfo;
 import com.google.android.gms.wallet.Wallet;
 import com.google.android.gms.wallet.WalletConstants;
 
@@ -33,17 +30,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.cert.CertPathValidatorException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeMap;
 
@@ -122,8 +115,9 @@ public final class Cloudipsp {
         new PayTask(callback) {
             @Override
             public void runInTry() throws java.lang.Exception {
-                final String callbackUrl = callbackUrl(token);
-                final Checkout checkout = checkout(card, token, null, callbackUrl);
+                final JSONObject receipt = ajaxInfo(token);
+                final JSONObject orderData = receipt.getJSONObject("order_data");
+                final Checkout checkout = checkout(card, token, orderData.optString("email", null), receipt.getString("response_url"));
                 payContinue(token, checkout, callback);
             }
         }.start();
@@ -392,7 +386,7 @@ public final class Cloudipsp {
         }
     }
 
-    private String getToken(Order order, Card card) throws java.lang.Exception {
+    public String getToken(Order order, Card card) throws java.lang.Exception {
         final TreeMap<String, Object> request = new TreeMap<String, Object>();
 
         request.put("order_id", order.id);
@@ -551,11 +545,10 @@ public final class Cloudipsp {
         return parseOrder(orderData, response.getString("response_url"));
     }
 
-    private static String callbackUrl(String token) throws java.lang.Exception {
+    private static JSONObject ajaxInfo(String token) throws java.lang.Exception {
         final TreeMap<String, Object> request = new TreeMap<>();
         request.put("token", token);
-        final JSONObject response = call("/api/checkout/merchant/order", request);
-        return response.getString("response_url");
+        return call("/api/checkout/ajax/info", request);
     }
 
     private static Receipt parseOrder(JSONObject orderData, String responseUrl) throws JSONException {
@@ -565,7 +558,6 @@ public final class Cloudipsp {
         } catch (IllegalArgumentException e) {
             cardType = Card.Type.UNKNOWN;
         }
-
 
         Date recTokenLifeTime;
         try {
@@ -622,8 +614,14 @@ public final class Cloudipsp {
     }
 
     private static JSONObject call(String path, TreeMap<String, Object> request) throws java.lang.Exception {
-        final JSONObject json = callJson(path, request);
-        checkResponse(json);
+        JSONObject json = callJson(path, request);
+        if ("2.0".equals(json.optString("version"))) {
+            final byte[] jsonBytes = Base64.decode(json.getString("data"), Base64.DEFAULT);
+            //noinspection CharsetObjectCanBeUsed
+            json = new JSONObject(new String(jsonBytes, "UTF-8"));
+        } else {
+            checkResponse(json);
+        }
         return json;
     }
 
