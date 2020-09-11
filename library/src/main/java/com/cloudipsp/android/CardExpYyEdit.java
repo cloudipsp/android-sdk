@@ -26,7 +26,7 @@ public class CardExpYyEdit extends CardInputBase {
     }
 
     private void init() {
-        setFilters(new InputFilter[]{new InputFilter.LengthFilter(2)});
+        setFiltersInternal(new InputFilter[]{new InputFilter.LengthFilter(2)});
         setInputType(EditorInfo.TYPE_CLASS_NUMBER);
         setSingleLine();
     }

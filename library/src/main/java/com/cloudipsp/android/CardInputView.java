@@ -88,6 +88,10 @@ public final class CardInputView extends FrameLayout implements CardDisplay {
         helpedNeeded = value;
     }
 
+    public void setCardNumberFormatting(boolean enable) {
+        view.setCardNumberFormatting(enable);
+    }
+
     public boolean isHelpedNeeded() {
         return helpedNeeded;
     }

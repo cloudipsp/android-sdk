@@ -73,6 +73,10 @@ public final class CardInputLayout extends FrameLayout implements CardDisplay {
         setFakeIds();
     }
 
+    public void setCardNumberFormatting(boolean enable) {
+        editCardNumber.setCardNumberFormatting(enable);
+    }
+
     public void display(Card card) {
         boolean enabled = true;
         if (card == null) {

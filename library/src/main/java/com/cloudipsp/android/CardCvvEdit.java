@@ -32,7 +32,7 @@ public class CardCvvEdit extends CardInputBase {
     }
 
     void setCvv4(boolean enabled) {
-        setFilters(new InputFilter[]{new InputFilter.LengthFilter(enabled ? 4 : 3)});
+        setFiltersInternal(new InputFilter[]{new InputFilter.LengthFilter(enabled ? 4 : 3)});
         if (!enabled) {
             final String cvv = getTextInternal().toString();
             if (cvv.length() == 4) {

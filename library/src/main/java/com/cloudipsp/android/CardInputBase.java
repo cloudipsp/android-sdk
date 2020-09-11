@@ -2,6 +2,7 @@ package com.cloudipsp.android;
 
 import android.content.Context;
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.widget.EditText;
@@ -30,6 +31,19 @@ class CardInputBase extends EditText {
         } else {
             throw new RuntimeException("unsupported operation");
         }
+    }
+
+    @Override
+    public void setFilters(InputFilter[] filters) {
+        if (isParentCall()) {
+            super.setFilters(filters);
+        } else {
+            throw new RuntimeException("unsupported operation");
+        }
+    }
+
+    protected void setFiltersInternal(InputFilter[] filters) {
+        super.setFilters(filters);
     }
 
     void addTextChangedListenerInternal(TextWatcher watcher) {
@@ -64,15 +78,15 @@ class CardInputBase extends EditText {
         }
     }
 
-    private final boolean isParentCall() {
-        final StackTraceElement stack[] = new Throwable().getStackTrace();
+    private boolean isParentCall() {
+        final StackTraceElement[] stack = new Throwable().getStackTrace();
 
         return isParentClass(stack[2].getClassName()) ||
                 isParentClass(stack[3].getClassName()) ||
                 isParentClass(stack[4].getClassName());
     }
 
-    private final boolean isParentClass(String className) {
+    private boolean isParentClass(String className) {
         return className.startsWith("android.widget.")
                 || className.equals("android.support.design.widget.TextInputLayout")
                 || className.equals("com.huawei.android.hwcontrol.HwEditor")

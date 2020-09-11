@@ -14,6 +14,7 @@ public class FlexibleExampleActivity extends BaseExampleActivity {
         super.onCreate(savedInstanceState);
 
         cardLayout = findViewById(R.id.card_layout);
+        cardLayout.setCardNumberFormatting(false);
     }
 
     @Override
