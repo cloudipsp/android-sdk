@@ -757,7 +757,9 @@ public final class Cloudipsp {
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", contentType);
             connection.setRequestProperty("Content-Length", String.valueOf(sentBytes.length));
-            connection.setRequestProperty("User-Agent", "okhttp");
+            connection.setRequestProperty("User-Agent", "Android-SDK");
+            connection.setRequestProperty("SDK-OS", "android");
+            connection.setRequestProperty("SDK-Version", "1.13.0");
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setUseCaches(false);
