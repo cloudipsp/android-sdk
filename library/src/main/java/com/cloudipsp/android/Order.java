@@ -58,6 +58,7 @@ public class Order implements Parcelable {
     String serverCallbackUrl;
     String reservationData;
     String paymentSystem;
+    boolean delayed = false;
 
     final HashMap<String, String> arguments = new HashMap<String, String>();
 
@@ -82,6 +83,7 @@ public class Order implements Parcelable {
         serverCallbackUrl = input.readString();
         reservationData = input.readString();
         paymentSystem = input.readString();
+        delayed = input.readBoolean();
 
         final Bundle bundle = input.readBundle();
         for (String key : bundle.keySet()) {
@@ -142,6 +144,10 @@ public class Order implements Parcelable {
             throw new NullPointerException("PaymentSystems should be not null");
         }
         paymentSystems = value;
+    }
+
+    public void setDelayed(boolean value) {
+        delayed = value;
     }
 
     public void setDefaultPaymentSystem(String value) {
@@ -256,6 +262,7 @@ public class Order implements Parcelable {
         output.writeString(serverCallbackUrl);
         output.writeString(reservationData);
         output.writeString(paymentSystem);
+        output.writeBoolean(delayed);
 
         final Bundle bundle = new Bundle();
         for (String key : arguments.keySet()) {

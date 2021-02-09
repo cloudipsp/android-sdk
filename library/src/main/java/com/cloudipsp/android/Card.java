@@ -136,7 +136,7 @@ public final class Card implements Parcelable {
     }
 
     private boolean isValidExpireYearValue() {
-        return yy >= 18 && yy <= 99;
+        return yy >= 21 && yy <= 99;
     }
 
     public boolean isValidExpireYear() {

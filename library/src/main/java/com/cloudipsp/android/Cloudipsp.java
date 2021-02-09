@@ -432,7 +432,7 @@ public final class Cloudipsp {
         request.put("verification_type", order.verificationType.name());
         request.putAll(order.arguments);
         request.put("response_url", URL_CALLBACK);
-        request.put("delayed", "N");
+        request.put("delayed", order.delayed ? "Y" : "N");
 
         final JSONObject response = call("/api/checkout/token", request);
         final String token = response.getString("token");
