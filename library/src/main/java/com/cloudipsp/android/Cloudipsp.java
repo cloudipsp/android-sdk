@@ -500,7 +500,7 @@ public final class Cloudipsp {
     private static Checkout checkoutContinue(TreeMap<String, Object> request, String callbackUrl) throws java.lang.Exception {
         final JSONObject response = call("/api/checkout/ajax", request);
         final String url = response.getString("url");
-        if (callbackUrl.equals(url)) {
+        if (url.startsWith(callbackUrl)) {
             return new Checkout(null, url, Checkout.WITHOUT_3DS, callbackUrl);
         } else {
             final JSONObject sendData = response.getJSONObject("send_data");
@@ -695,7 +695,7 @@ public final class Cloudipsp {
                                         }
                                     }.start();
                                 } else {
-                                    if (!response.getString("url").equals(checkout.callbackUrl)) {
+                                    if (!response.getString("url").startsWith(checkout.callbackUrl)) {
                                         throw new java.lang.Exception();
                                     }
                                     final JSONObject orderData = response.getJSONObject("params");
