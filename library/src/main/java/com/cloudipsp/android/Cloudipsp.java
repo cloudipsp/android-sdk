@@ -54,6 +54,7 @@ public final class Cloudipsp {
     private static final SimpleDateFormat DATE_AND_FORMAT = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.US);
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy", Locale.US);
     private static final SSLSocketFactory tlsSocketFactory = Tls12SocketFactory.getInstance();
+    static boolean strictUiBlocking = true;
 
     static {
         DATE_AND_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -864,5 +865,9 @@ public final class Cloudipsp {
                 super(throwable);
             }
         }
+    }
+
+    public static void setStrictUiBlocking(boolean value) {
+        strictUiBlocking = value;
     }
 }

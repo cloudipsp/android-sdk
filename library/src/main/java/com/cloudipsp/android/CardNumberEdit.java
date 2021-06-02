@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
  * Created by vberegovoy on 22.12.15.
  */
 public final class CardNumberEdit extends CardInputBase {
+    private static final int MIN_NUMBER_LENGTH = 16;
     private static final int MAX_NUMBER_LENGTH = 19;
     private CreditCardFormatTextWatcher formatTextWatcher;
 
@@ -40,6 +41,29 @@ public final class CardNumberEdit extends CardInputBase {
         setCardNumberFormatting(true);
         setFiltersInternal(new InputFilter[]{new InputFilter.LengthFilter(MAX_NUMBER_LENGTH)});
         setSingleLine();
+    }
+
+    @Override
+    protected CharSequence getMaskedValue() {
+        final CharSequence cardNumber = getTextInternal();
+        final int length = cardNumber.length();
+
+        if (length >= MIN_NUMBER_LENGTH) {
+            final StringBuilder sb = new StringBuilder();
+            int i = 0;
+            while (i < 6) {
+                sb.append(cardNumber.charAt(i++));
+            }
+            final int tail = length - 4;
+            while (i++ < tail) {
+                sb.append('*');
+            }
+            while (i < length) {
+                sb.append(cardNumber.charAt(i++));
+            }
+            return sb.toString();
+        }
+        return "";
     }
 
     public void setCardNumberFormatting(boolean enable) {

@@ -30,4 +30,9 @@ public class CardExpYyEdit extends CardInputBase {
         setInputType(EditorInfo.TYPE_CLASS_NUMBER);
         setSingleLine();
     }
+
+    @Override
+    protected CharSequence getMaskedValue() {
+        return getTextInternal().toString();
+    }
 }

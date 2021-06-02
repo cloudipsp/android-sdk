@@ -25,6 +25,11 @@ public class CardExpMmEdit extends CardInputBase {
         init();
     }
 
+    @Override
+    protected CharSequence getMaskedValue() {
+        return getTextInternal().toString();
+    }
+
     private void init() {
         setFiltersInternal(new InputFilter[]{new InputFilter.LengthFilter(2)});
         setInputType(EditorInfo.TYPE_CLASS_NUMBER);

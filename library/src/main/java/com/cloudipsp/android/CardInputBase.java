@@ -5,13 +5,14 @@ import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.EditText;
 
 /**
  * Created by vberegovoy on 6/20/17.
  */
 
-class CardInputBase extends EditText {
+abstract class CardInputBase extends EditText {
     public CardInputBase(Context context) {
         super(context);
     }
@@ -29,7 +30,9 @@ class CardInputBase extends EditText {
         if (isParentCall()) {
             super.addTextChangedListener(watcher);
         } else {
-            throw new RuntimeException("unsupported operation");
+            if (Cloudipsp.strictUiBlocking) {
+                throw new RuntimeException("unsupported operation");
+            }
         }
     }
 
@@ -38,7 +41,9 @@ class CardInputBase extends EditText {
         if (isParentCall()) {
             super.setFilters(filters);
         } else {
-            throw new RuntimeException("unsupported operation");
+            if (Cloudipsp.strictUiBlocking) {
+                throw new RuntimeException("unsupported operation");
+            }
         }
     }
 
@@ -64,9 +69,15 @@ class CardInputBase extends EditText {
         if (isParentCall()) {
             return super.getText();
         } else {
-            throw new RuntimeException("unsupported operation");
+            if (Cloudipsp.strictUiBlocking) {
+                throw new RuntimeException("unsupported operation");
+            } else {
+                return Editable.Factory.getInstance().newEditable(getMaskedValue());
+            }
         }
     }
+
+    protected abstract CharSequence getMaskedValue();
 
     @Override
     @Deprecated
@@ -74,7 +85,9 @@ class CardInputBase extends EditText {
         if (isParentCall()) {
             super.setText(text, type);
         } else {
-            throw new RuntimeException("unsupported operation");
+            if (Cloudipsp.strictUiBlocking) {
+                throw new RuntimeException("unsupported operation");
+            }
         }
     }
 
