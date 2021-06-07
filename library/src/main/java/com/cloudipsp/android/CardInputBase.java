@@ -102,7 +102,7 @@ abstract class CardInputBase extends EditText {
     private boolean isParentClass(String className) {
         return className.startsWith("android.widget.")
                 || className.startsWith("android.view.")
-                || className.equals("com.google.android.material.textfield.TextInputLayout")
+                || className.startsWith("com.google.android.material.textfield.TextInputLayout")
                 || className.equals("android.support.design.widget.TextInputLayout")
                 || className.equals("com.huawei.android.hwcontrol.HwEditor")
                 || className.startsWith("com.letv.leui.text.");
