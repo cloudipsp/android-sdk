@@ -49,7 +49,7 @@ public class CloudipspWebView extends WebView implements CloudipspView {
         final WebSettings settings = getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
-        settings.setAppCacheEnabled(false);
+        settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         settings.setDomStorageEnabled(true);
         settings.setLoadsImagesAutomatically(true);
         settings.setAllowFileAccess(false);
