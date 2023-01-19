@@ -83,7 +83,7 @@ public class Order implements Parcelable {
         serverCallbackUrl = input.readString();
         reservationData = input.readString();
         paymentSystem = input.readString();
-        delayed = input.readBoolean();
+        delayed = input.readInt() == 1;
 
         final Bundle bundle = input.readBundle();
         for (String key : bundle.keySet()) {
@@ -262,7 +262,7 @@ public class Order implements Parcelable {
         output.writeString(serverCallbackUrl);
         output.writeString(reservationData);
         output.writeString(paymentSystem);
-        output.writeBoolean(delayed);
+        output.writeInt(delayed ? 1 : 0);
 
         final Bundle bundle = new Bundle();
         for (String key : arguments.keySet()) {

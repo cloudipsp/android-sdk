@@ -760,7 +760,7 @@ public final class Cloudipsp {
             connection.setRequestProperty("Content-Length", String.valueOf(sentBytes.length));
             connection.setRequestProperty("User-Agent", "Android-SDK");
             connection.setRequestProperty("SDK-OS", "android");
-            connection.setRequestProperty("SDK-Version", "1.15.0");
+            connection.setRequestProperty("SDK-Version", "1.17.2");
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setUseCaches(false);
